@@ -1,0 +1,2050 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>mDANCE テンポチェンジャー</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: -apple-system, "Hiragino Sans", "Hiragino Kaku Gothic ProN", sans-serif;
+    background: #0b0e17;
+    color: #e8e9ee;
+    min-height: 100vh;
+  }
+  .app { max-width: 460px; margin: 0 auto; padding-bottom: 100px; }
+  .header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 18px 12px; border-bottom: 1px solid #1e2333;
+  }
+  .brand { display: flex; align-items: center; gap: 8px; }
+  .brand .logo {
+    font-weight: 800; font-style: italic; font-size: 18px;
+    background: linear-gradient(90deg, #ff6ec7, #a78bfa);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .badge { font-size: 10px; font-weight: 700; color: #4ade80; border: 1px solid #4ade80; border-radius: 999px; padding: 2px 8px; }
+  .subtitle { font-size: 11px; color: #6d738a; }
+
+  .empty-state { padding: 60px 24px; text-align: center; }
+  .empty-state .icon { font-size: 44px; margin-bottom: 14px; }
+  .empty-state h2 { font-size: 19px; margin-bottom: 8px; }
+  .empty-state p { font-size: 13px; color: #9096a8; margin-bottom: 20px; }
+  .file-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(90deg, #ff6ec7, #a78bfa); color: #12081a;
+    border: none; border-radius: 14px; padding: 13px 26px; font-weight: 800; font-size: 14.5px;
+  }
+
+  .card { margin: 16px 18px; background: #151827; border: 1px solid #232840; border-radius: 16px; padding: 14px; }
+  .section-label { font-size: 13px; font-weight: 700; margin: 18px 18px 8px; color: #cfd2dd; display:flex; align-items:center; gap:6px; }
+
+  .wave-wrap { position: relative; }
+  .playhead-line {
+    position: absolute; top: 0; bottom: 0; left: 0; width: 2px;
+    background: #fff; box-shadow: 0 0 6px rgba(255,255,255,0.8);
+    pointer-events: none; display: none;
+  }
+  .seek-row { position: relative; margin-top: 12px; height: 22px; display: flex; align-items: center; }
+  .seek-track {
+    position: absolute; left: 0; right: 0; height: 5px; border-radius: 999px;
+    background: #232840; pointer-events: none;
+  }
+  .seek-fill {
+    position: absolute; left: 0; top: 0; height: 100%; width: 0%;
+    background: linear-gradient(90deg, #ff6ec7, #a78bfa); border-radius: 999px; pointer-events: none;
+  }
+  .seek-row input[type=range] {
+    position: relative; z-index: 2; width: 100%; height: 22px; margin: 0;
+    -webkit-appearance: none; appearance: none; background: transparent;
+  }
+  .seek-row input[type=range]::-webkit-slider-runnable-track { background: transparent; height: 22px; }
+  .seek-row input[type=range]::-moz-range-track { background: transparent; height: 22px; }
+  .seek-row input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%;
+    background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.5); margin-top: 3px;
+  }
+  .seek-row input[type=range]::-moz-range-thumb {
+    width: 16px; height: 16px; border-radius: 50%; background: #fff; border: none;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+  }
+  .seek-time {
+    display: flex; justify-content: space-between; font-size: 10.5px;
+    color: #9096a8; margin-top: 2px; font-variant-numeric: tabular-nums;
+  }
+  .mode-placeholder {
+    margin: 0 18px 16px; font-size: 12.5px; color: #6d738a; text-align: center;
+    padding: 14px; border: 1px dashed #232840; border-radius: 12px;
+  }
+  .tap-flash {
+    position: absolute; top: 0; bottom: 0; width: 3px;
+    background: #fff; opacity: 0.9; pointer-events: none;
+    animation: tapFlash 0.4s ease-out forwards;
+  }
+  @keyframes tapFlash { from { opacity: 0.9; transform: scaleY(1); } to { opacity: 0; transform: scaleY(1.15); } }
+  canvas#wave { width: 100%; height: 84px; display: block; border-radius: 8px; }
+  .time-labels { display: flex; justify-content: space-between; font-size: 10.5px; color: #6d738a; margin-top: 8px; }
+  .tap-hint { font-size: 11.5px; color: #9096a8; margin-top: 8px; text-align: center; }
+
+  .time-inputs { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .time-box { flex: 1; background: #0e1120; border: 1px solid #2a3050; border-radius: 10px; padding: 8px 10px; text-align: center; }
+  .time-box .lbl { font-size: 10.5px; color: #6d738a; margin-bottom: 4px; }
+  .time-box input {
+    width: 100%; background: transparent; border: none; color: #e8e9ee;
+    font-size: 15px; font-weight: 700; text-align: center; font-variant-numeric: tabular-nums;
+  }
+  .arrow { color: #4a5170; font-size: 14px; }
+
+  .pct-row { display: flex; align-items: center; gap: 10px; }
+  .pct-toggle { display: flex; background: #0e1120; border-radius: 999px; border: 1px solid #2a3050; overflow: hidden; }
+  .pct-toggle button { border: none; background: transparent; color: #8b91a8; font-size: 12px; font-weight: 700; padding: 7px 12px; }
+  .pct-toggle button.active[data-dir="slow"] { background: #3730a6; color: #d6d3ff; }
+  .pct-toggle button.active[data-dir="fast"] { background: #b34700; color: #ffd9b0; }
+  input[type=range] { width: 100%; accent-color: #ff8ad1; }
+  .pct-value { font-size: 13px; font-weight: 700; min-width: 46px; text-align: right; }
+
+  .apply-btn {
+    margin-top: 14px; width: 100%; padding: 11px; border-radius: 12px; border: none;
+    background: linear-gradient(90deg, #ff6ec7, #a78bfa); color: #12081a; font-weight: 800; font-size: 14px;
+  }
+  .apply-btn:disabled { opacity: 0.4; }
+
+  .applied-list { margin: 0 18px 16px; display: flex; flex-direction: column; gap: 8px; }
+  .chip { display: flex; align-items: center; justify-content: space-between; background: #151827; border: 1px solid #232840; border-radius: 12px; padding: 10px 12px; font-size: 12.5px; }
+  .chip .txt { color: #d7d9e6; } .chip .txt b { color: #ff8ad1; }
+  .chip .x { color: #6d738a; font-size: 16px; padding: 0 6px; background: none; border: none; }
+  .empty-list-note { font-size: 12px; color: #6d738a; padding: 4px 4px; }
+
+  .global-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .global-row .name { font-size: 13px; font-weight: 700; }
+  .global-toggle { display: flex; background: #0e1120; border-radius: 999px; border: 1px solid #2a3050; overflow: hidden; margin-bottom: 10px; }
+  .global-toggle button { flex:1; border: none; background: transparent; color: #8b91a8; font-size: 12px; font-weight: 700; padding: 7px 0; }
+  .global-toggle button.active[data-dir="slow"] { background: #3730a6; color: #d6d3ff; }
+  .global-toggle button.active[data-dir="fast"] { background: #b34700; color: #ffd9b0; }
+
+  .mode-toggle { display: flex; gap: 8px; margin: 0 18px 4px; }
+  .mode-toggle button {
+    flex: 1; padding: 12px 0; border-radius: 12px; border: 1px solid #232840;
+    background: #151827; color: #9096a8; font-size: 13px; font-weight: 700;
+  }
+  .mode-toggle button.active {
+    background: linear-gradient(90deg, #ff6ec7, #a78bfa); color: #12081a; border-color: transparent;
+  }
+  .mic-row { display: flex; align-items: center; gap: 10px; }
+  .mic-btn {
+    width: 52px; height: 52px; border-radius: 50%; border: none; flex-shrink: 0;
+    background: #151827; border: 1px solid #2a3050; color: #e8e9ee; font-size: 20px;
+  }
+  .mic-btn.listening { background: #b91c4c; animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(185,28,76,0.5);} 50%{box-shadow:0 0 0 10px rgba(185,28,76,0);} }
+  .mic-status { font-size: 12.5px; color: #9096a8; flex: 1; }
+  .mic-status.on { color: #ff8ad1; }
+  .mic-examples { font-size: 11px; color: #6d738a; margin-top: 8px; line-height: 1.6; }
+
+  .status-bar { margin: 0 18px 16px; font-size: 12.5px; color: #7de3a8; display: none; align-items: center; gap: 8px; }
+  .status-bar.show { display: flex; }
+  .spinner { width: 14px; height: 14px; border: 2px solid #1e2333; border-top-color: #7de3a8; border-radius: 50%; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .footer-bar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    max-width: 460px; margin: 0 auto;
+    display: flex; gap: 8px; padding: 12px 18px calc(14px + env(safe-area-inset-bottom));
+    background: #10131f; border-top: 1px solid #1e2333;
+  }
+  .footer-bar button { flex: 1; border: none; border-radius: 12px; padding: 12px 0; font-weight: 800; font-size: 13px; }
+  .btn-play { background: #22c55e; color: #06210f; }
+  .btn-play:disabled { opacity: 0.4; }
+  .btn-save { background: #3b82f6; color: #071433; }
+  .btn-save:disabled { opacity: 0.4; }
+  .btn-reset { background: #232840; color: #9096a8; flex: 0.6; font-size: 11px !important; }
+
+  .pitch-note { display: flex; align-items: center; gap: 6px; margin: 0 18px 10px; font-size: 11.5px; color: #7de3a8; }
+  .copyright-note {
+    margin: 0 18px 90px; padding: 10px 12px;
+    background: #16130d; border: 1px solid #3d3420; border-radius: 10px;
+    font-size: 11px; color: #b8a878; line-height: 1.7;
+  }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: #4ade80; }
+
+  .hidden { display: none !important; }
+  input[type=file] { display: none; }
+
+  .toast {
+    position: fixed; top: 14px; left: 50%; transform: translateX(-50%);
+    background: #2a1220; border: 1px solid #b91c4c; color: #ffd7e3;
+    padding: 10px 16px; border-radius: 12px; font-size: 12.5px; z-index: 999;
+    max-width: 86%; text-align: center; opacity: 0; transition: opacity .25s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; }
+  .help-btn {
+    width: 30px; height: 30px; border-radius: 50%;
+    border: 1px solid #b91c4c; background: #1c0e16; color: #ff6b8f;
+    font-size: 15px; font-weight: 800; flex-shrink: 0;
+  }
+  .help-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.65);
+    z-index: 998; display: none; align-items: flex-end; justify-content: center;
+  }
+  .help-overlay.show { display: flex; }
+  .help-panel {
+    width: 100%; max-width: 460px; max-height: 82vh;
+    background: #151827; border: 1px solid #2a3050; border-radius: 20px 20px 0 0;
+    display: flex; flex-direction: column;
+  }
+  .help-head {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 18px 12px; font-size: 15px; font-weight: 800;
+    border-bottom: 1px solid #232840;
+  }
+  .help-close {
+    width: 30px; height: 30px; border-radius: 50%; border: none;
+    background: #232840; color: #9096a8; font-size: 13px;
+  }
+  .help-body { overflow-y: auto; padding: 6px 18px calc(20px + env(safe-area-inset-bottom)); }
+  .help-step { padding: 12px 0; border-bottom: 1px solid #1c2136; }
+  .help-step:last-child { border-bottom: none; }
+  .help-step-title { font-size: 13.5px; font-weight: 800; margin-bottom: 6px; }
+  .help-step p { font-size: 12.5px; color: #b8bdcf; line-height: 1.8; }
+  .help-step p b { color: #ff8ad1; }
+  .help-caution p { color: #b8a878; }
+  .mic-card.listening {
+    border-color: #b91c4c;
+    box-shadow: 0 0 14px rgba(185,28,76,0.35);
+  }
+
+  /* ---------- 横向き(landscape)対応 ---------- */
+  @media (orientation: landscape) {
+    .app { max-width: 680px; }
+    .empty-state { padding: 24px 24px; }
+    .card { padding: 10px 14px; margin: 10px 18px; }
+    .section-label { margin: 10px 18px 6px; }
+    .mode-placeholder { margin: 0 18px 10px; padding: 10px; }
+    .mic-examples { display: none; }
+    .copyright-note { margin: 0 18px 84px; }
+    .footer-bar { padding: 8px 18px calc(8px + env(safe-area-inset-bottom)); }
+    .applied-list { margin: 0 18px 10px; }
+  }
+  @media (orientation: landscape) and (max-height: 420px) {
+    .header { padding: 8px 18px 6px; }
+    .time-inputs { margin-bottom: 8px; }
+    .status-bar { margin: 0 18px 10px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="brand"><span class="logo">mDANCE</span><span class="badge">FREE</span></div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span class="subtitle">テンポチェンジャー <span style="opacity:0.5;">· v13</span></span>
+      <button class="help-btn" id="helpBtn">?</button>
+    </div>
+  </div>
+
+  <div class="help-overlay" id="helpOverlay">
+    <div class="help-panel">
+      <div class="help-head">
+        <span>📖 使い方ガイド</span>
+        <button class="help-close" id="helpCloseBtn">✕</button>
+      </div>
+      <div class="help-body">
+        <div class="help-step">
+          <div class="help-step-title">1️⃣ 曲を読み込む 📂</div>
+          <p>「ファイルを選ぶ」からスマホに保存した曲(MP3・WAV・M4Aなど)を選びます。曲はスマホの中だけで処理されるので安心です🔒</p>
+        </div>
+        <div class="help-step">
+          <div class="help-step-title">2️⃣ 変更する場所を選ぶ 🎛️</div>
+          <p>✂️ <b>区間を指定して変更</b> → 曲の一部分だけ速さを変えたいとき<br>🌍 <b>曲全体を変更</b> → 曲まるごと速さを変えたいとき</p>
+        </div>
+        <div class="help-step">
+          <div class="help-step-title">3️⃣-✂️ 区間だけ変える場合</div>
+          <p>👆 波形を<b>1回タップ=開始位置</b>(緑の線)、<b>もう1回タップ=終了位置</b>(ピンクの線)。秒数を直接入力してもOK✏️<br>そのあと「遅く/速く」と%を決めて「この区間に適用」をタップ!複数の区間を重ねてもOKです🎯</p>
+        </div>
+        <div class="help-step">
+          <div class="help-step-title">3️⃣-🌍 全体を変える場合</div>
+          <p>「遅く/速く」と%を決めて「全体に適用」をタップするだけ!</p>
+        </div>
+        <div class="help-step">
+          <div class="help-step-title">🎙️ 声で操作もできる!</div>
+          <p>マイクをタップして話しかけてください🗣️<br>例:「<b>12秒から18秒を15%遅く</b>」<br>例:「<b>全体を3%速く</b>」<br>例:「<b>1分20秒から1分30秒を10%ゆっくり</b>」</p>
+        </div>
+        <div class="help-step">
+          <div class="help-step-title">4️⃣ 確認して保存 ▶️💾</div>
+          <p>「▶ 再生確認」で聴いてみて、良ければ「💾 書き出し」でWAVファイルとして保存されます📥<br>白いバーをドラッグすると好きな場所から聴けます🎧</p>
+        </div>
+        <div class="help-step">
+          <div class="help-step-title">💡 便利ワザ</div>
+          <p>・変更はリストの✕でいつでも取り消せます<br>・左下の↺は<b>2回タップ</b>で全部リセット<br>・音程(キー)は変わらず、速さだけが変わります🎼</p>
+        </div>
+        <div class="help-step help-caution">
+          <div class="help-step-title">⚠️ 大事なお願い</div>
+          <p>編集した曲は私的利用の範囲で🙏 発表会・公演・配信などで市販の曲を使うときは、必要な許諾を確認してくださいね</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="emptyState" class="empty-state">
+    <div class="icon">🎵</div>
+    <h2>曲を読み込もう！</h2>
+    <p>MP3・WAV・M4A などOK<br>秒数を指定してテンポだけ変更できます</p>
+    <label class="file-btn">📂 ファイルを選ぶ<input type="file" id="fileInput" accept="audio/*,.mp3,.wav,.m4a,.aac,.caf,.aiff,.flac"></label>
+  </div>
+
+  <div id="mainUI" class="hidden">
+
+    <div class="card">
+      <div class="wave-wrap">
+        <canvas id="wave"></canvas>
+        <div class="playhead-line" id="playheadLine"></div>
+      </div>
+      <div class="time-labels" id="timeLabels"></div>
+      <div class="seek-row">
+        <div class="seek-track"><div class="seek-fill" id="seekFill"></div></div>
+        <input type="range" id="seekBar" min="0" max="1000" value="0" step="10">
+      </div>
+      <div class="seek-time" id="seekTimeLabel">0:00.0 / 0:00.0</div>
+      <div class="tap-hint hidden" id="tapHint">👆 波形をタップして<b id="tapHintTarget">開始位置</b>を設定</div>
+      <button class="apply-btn hidden" id="resetSelectionBtn" style="margin-top:8px;background:#232840;color:#9096a8;">選択をやり直す</button>
+    </div>
+
+    <div class="section-label">🎛️ どちらを変更する?</div>
+    <div class="mode-toggle" id="modeToggle">
+      <button data-mode="region">✂️ 区間を指定して変更</button>
+      <button data-mode="global">🌍 曲全体を変更</button>
+    </div>
+    <div class="mode-placeholder" id="modePlaceholder">👆 まずはどちらを変更するか選んでください</div>
+
+    <div id="regionSection" class="hidden">
+      <div class="section-label">✂️ 区間だけ変更</div>
+      <div class="card">
+        <div class="time-inputs">
+          <div class="time-box">
+            <div class="lbl">開始(秒)</div>
+            <input type="number" id="startInput" step="0.1" min="0" placeholder="—">
+          </div>
+          <span class="arrow">→</span>
+          <div class="time-box">
+            <div class="lbl">終了(秒)</div>
+            <input type="number" id="endInput" step="0.1" min="0" placeholder="—">
+          </div>
+        </div>
+        <div class="pct-row">
+          <div class="pct-toggle" id="regionToggle">
+            <button class="active slow" data-dir="slow">遅く</button>
+            <button data-dir="fast">速く</button>
+          </div>
+          <div style="flex:1"><input type="range" id="regionPct" min="1" max="50" value="15"></div>
+          <div class="pct-value" id="regionPctVal">15%</div>
+        </div>
+        <button class="apply-btn" id="applyRegionBtn">この区間に適用</button>
+      </div>
+    </div>
+
+    <div id="globalSection" class="hidden">
+      <div class="section-label">🌍 曲全体を変更</div>
+      <div class="card">
+        <div class="global-toggle" id="globalToggle">
+          <button class="active slow" data-dir="slow">遅く</button>
+          <button data-dir="fast">速く</button>
+        </div>
+        <div class="global-row">
+          <span class="name" id="globalLabel">全体を 3% 遅くする</span>
+        </div>
+        <input type="range" id="globalPct" min="0" max="30" value="3">
+        <button class="apply-btn" id="applyGlobalBtn">全体に適用</button>
+      </div>
+    </div>
+
+    <div id="appliedList" class="applied-list"></div>
+
+    <div class="mic-card card">
+      <div class="mic-row">
+        <button class="mic-btn" id="micBtn">🎙️</button>
+        <div class="mic-status" id="micStatus">タップして話しかけてね</div>
+      </div>
+      <div class="mic-examples">例:「12秒から18秒を15%遅く」「全体を3%速く」</div>
+    </div>
+
+    <div class="status-bar" id="statusBar"><div class="spinner"></div><span id="statusText">処理中...</span></div>
+
+    <div class="pitch-note"><span class="dot"></span> 音程はどの変更でも保持されます(SoundTouch音声エンジン使用/LGPL-2.1)</div>
+    <div class="copyright-note">⚠️ 編集した音源は私的利用の範囲でお使いください。市販音源を発表会・公演・配信などで使用する場合は、事前に必要な許諾(著作権・原盤権等)をご確認ください。音源はサーバーに送信されず、すべてお使いの端末内で処理されます。</div>
+  </div>
+</div>
+
+<div class="footer-bar hidden" id="footerBar">
+  <button class="btn-reset" id="resetBtn">↺</button>
+  <button class="btn-play" id="playBtn" disabled>▶ 再生確認</button>
+  <button class="btn-save" id="saveBtn" disabled>💾 書き出し</button>
+</div>
+
+<script id="soundtouch-lib">
+/*
+ * SoundTouch JS v0.3.0 audio processing library
+ * Copyright (c) Olli Parviainen
+ * Copyright (c) Ryan Berdeen
+ * Copyright (c) Jakub Fiala
+ * Copyright (c) Steve 'Cutter' Blades
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+class FifoSampleBuffer {
+  constructor() {
+    this._vector = new Float32Array();
+    this._position = 0;
+    this._frameCount = 0;
+  }
+  get vector() {
+    return this._vector;
+  }
+  get position() {
+    return this._position;
+  }
+  get startIndex() {
+    return this._position * 2;
+  }
+  get frameCount() {
+    return this._frameCount;
+  }
+  get endIndex() {
+    return (this._position + this._frameCount) * 2;
+  }
+  clear() {
+    this._vector.fill(0);
+    this._position = 0;
+    this._frameCount = 0;
+  }
+  put(numFrames) {
+    this._frameCount += numFrames;
+  }
+  putSamples(samples, position, numFrames = 0) {
+    position = position || 0;
+    const sourceOffset = position * 2;
+    if (!(numFrames >= 0)) {
+      numFrames = (samples.length - sourceOffset) / 2;
+    }
+    const numSamples = numFrames * 2;
+    this.ensureCapacity(numFrames + this._frameCount);
+    const destOffset = this.endIndex;
+    this.vector.set(samples.subarray(sourceOffset, sourceOffset + numSamples), destOffset);
+    this._frameCount += numFrames;
+  }
+  putBuffer(buffer, position, numFrames = 0) {
+    position = position || 0;
+    if (!(numFrames >= 0)) {
+      numFrames = buffer.frameCount - position;
+    }
+    this.putSamples(buffer.vector, buffer.position + position, numFrames);
+  }
+  receive(numFrames) {
+    if (!(numFrames >= 0) || numFrames > this._frameCount) {
+      numFrames = this.frameCount;
+    }
+    this._frameCount -= numFrames;
+    this._position += numFrames;
+  }
+  receiveSamples(output, numFrames = 0) {
+    const numSamples = numFrames * 2;
+    const sourceOffset = this.startIndex;
+    output.set(this._vector.subarray(sourceOffset, sourceOffset + numSamples));
+    this.receive(numFrames);
+  }
+  extract(output, position = 0, numFrames = 0) {
+    const sourceOffset = this.startIndex + position * 2;
+    const numSamples = numFrames * 2;
+    output.set(this._vector.subarray(sourceOffset, sourceOffset + numSamples));
+  }
+  ensureCapacity(numFrames = 0) {
+    const minLength = parseInt(numFrames * 2);
+    if (this._vector.length < minLength) {
+      const newVector = new Float32Array(minLength);
+      newVector.set(this._vector.subarray(this.startIndex, this.endIndex));
+      this._vector = newVector;
+      this._position = 0;
+    } else {
+      this.rewind();
+    }
+  }
+  ensureAdditionalCapacity(numFrames = 0) {
+    this.ensureCapacity(this._frameCount + numFrames);
+  }
+  rewind() {
+    if (this._position > 0) {
+      this._vector.set(this._vector.subarray(this.startIndex, this.endIndex));
+      this._position = 0;
+    }
+  }
+}
+
+class AbstractFifoSamplePipe {
+  constructor(createBuffers) {
+    if (createBuffers) {
+      this._inputBuffer = new FifoSampleBuffer();
+      this._outputBuffer = new FifoSampleBuffer();
+    } else {
+      this._inputBuffer = this._outputBuffer = null;
+    }
+  }
+  get inputBuffer() {
+    return this._inputBuffer;
+  }
+  set inputBuffer(inputBuffer) {
+    this._inputBuffer = inputBuffer;
+  }
+  get outputBuffer() {
+    return this._outputBuffer;
+  }
+  set outputBuffer(outputBuffer) {
+    this._outputBuffer = outputBuffer;
+  }
+  clear() {
+    this._inputBuffer.clear();
+    this._outputBuffer.clear();
+  }
+}
+
+class RateTransposer extends AbstractFifoSamplePipe {
+  constructor(createBuffers) {
+    super(createBuffers);
+    this.reset();
+    this._rate = 1;
+  }
+  set rate(rate) {
+    this._rate = rate;
+  }
+  reset() {
+    this.slopeCount = 0;
+    this.prevSampleL = 0;
+    this.prevSampleR = 0;
+  }
+  clear() {
+    super.clear();
+    this.reset();
+  }
+  clone() {
+    const result = new RateTransposer();
+    result.rate = this._rate;
+    return result;
+  }
+  process() {
+    const numFrames = this._inputBuffer.frameCount;
+    this._outputBuffer.ensureAdditionalCapacity(numFrames / this._rate + 1);
+    const numFramesOutput = this.transpose(numFrames);
+    this._inputBuffer.receive();
+    this._outputBuffer.put(numFramesOutput);
+  }
+  transpose(numFrames = 0) {
+    if (numFrames === 0) {
+      return 0;
+    }
+    const src = this._inputBuffer.vector;
+    const srcOffset = this._inputBuffer.startIndex;
+    const dest = this._outputBuffer.vector;
+    const destOffset = this._outputBuffer.endIndex;
+    let used = 0;
+    let i = 0;
+    while (this.slopeCount < 1.0) {
+      dest[destOffset + 2 * i] = (1.0 - this.slopeCount) * this.prevSampleL + this.slopeCount * src[srcOffset];
+      dest[destOffset + 2 * i + 1] = (1.0 - this.slopeCount) * this.prevSampleR + this.slopeCount * src[srcOffset + 1];
+      i = i + 1;
+      this.slopeCount += this._rate;
+    }
+    this.slopeCount -= 1.0;
+    if (numFrames !== 1) {
+      out: while (true) {
+        while (this.slopeCount > 1.0) {
+          this.slopeCount -= 1.0;
+          used = used + 1;
+          if (used >= numFrames - 1) {
+            break out;
+          }
+        }
+        const srcIndex = srcOffset + 2 * used;
+        dest[destOffset + 2 * i] = (1.0 - this.slopeCount) * src[srcIndex] + this.slopeCount * src[srcIndex + 2];
+        dest[destOffset + 2 * i + 1] = (1.0 - this.slopeCount) * src[srcIndex + 1] + this.slopeCount * src[srcIndex + 3];
+        i = i + 1;
+        this.slopeCount += this._rate;
+      }
+    }
+    this.prevSampleL = src[srcOffset + 2 * numFrames - 2];
+    this.prevSampleR = src[srcOffset + 2 * numFrames - 1];
+    return i;
+  }
+}
+
+class FilterSupport {
+  constructor(pipe) {
+    this._pipe = pipe;
+  }
+  get pipe() {
+    return this._pipe;
+  }
+  get inputBuffer() {
+    return this._pipe.inputBuffer;
+  }
+  get outputBuffer() {
+    return this._pipe.outputBuffer;
+  }
+  fillInputBuffer(
+  ) {
+    throw new Error('fillInputBuffer() not overridden');
+  }
+  fillOutputBuffer(numFrames = 0) {
+    while (this.outputBuffer.frameCount < numFrames) {
+      const numInputFrames = 8192 * 2 - this.inputBuffer.frameCount;
+      this.fillInputBuffer(numInputFrames);
+      if (this.inputBuffer.frameCount < 8192 * 2) {
+        break;
+      }
+      this._pipe.process();
+    }
+  }
+  clear() {
+    this._pipe.clear();
+  }
+}
+
+const noop = function () {
+  return;
+};
+
+class SimpleFilter extends FilterSupport {
+  constructor(sourceSound, pipe, callback = noop) {
+    super(pipe);
+    this.callback = callback;
+    this.sourceSound = sourceSound;
+    this.historyBufferSize = 22050;
+    this._sourcePosition = 0;
+    this.outputBufferPosition = 0;
+    this._position = 0;
+  }
+  get position() {
+    return this._position;
+  }
+  set position(position) {
+    if (position > this._position) {
+      throw new RangeError('New position may not be greater than current position');
+    }
+    const newOutputBufferPosition = this.outputBufferPosition - (this._position - position);
+    if (newOutputBufferPosition < 0) {
+      throw new RangeError('New position falls outside of history buffer');
+    }
+    this.outputBufferPosition = newOutputBufferPosition;
+    this._position = position;
+  }
+  get sourcePosition() {
+    return this._sourcePosition;
+  }
+  set sourcePosition(sourcePosition) {
+    this.clear();
+    this._sourcePosition = sourcePosition;
+  }
+  onEnd() {
+    this.callback();
+  }
+  fillInputBuffer(numFrames = 0) {
+    const samples = new Float32Array(numFrames * 2);
+    const numFramesExtracted = this.sourceSound.extract(samples, numFrames, this._sourcePosition);
+    this._sourcePosition += numFramesExtracted;
+    this.inputBuffer.putSamples(samples, 0, numFramesExtracted);
+  }
+  extract(target, numFrames = 0) {
+    this.fillOutputBuffer(this.outputBufferPosition + numFrames);
+    const numFramesExtracted = Math.min(numFrames, this.outputBuffer.frameCount - this.outputBufferPosition);
+    this.outputBuffer.extract(target, this.outputBufferPosition, numFramesExtracted);
+    const currentFrames = this.outputBufferPosition + numFramesExtracted;
+    this.outputBufferPosition = Math.min(this.historyBufferSize, currentFrames);
+    this.outputBuffer.receive(Math.max(currentFrames - this.historyBufferSize, 0));
+    this._position += numFramesExtracted;
+    return numFramesExtracted;
+  }
+  handleSampleData(event) {
+    this.extract(event.data, 4096);
+  }
+  clear() {
+    super.clear();
+    this.outputBufferPosition = 0;
+  }
+}
+
+const USE_AUTO_SEQUENCE_LEN = 0;
+const DEFAULT_SEQUENCE_MS = USE_AUTO_SEQUENCE_LEN;
+const USE_AUTO_SEEKWINDOW_LEN = 0;
+const DEFAULT_SEEKWINDOW_MS = USE_AUTO_SEEKWINDOW_LEN;
+const DEFAULT_OVERLAP_MS = 8;
+const _SCAN_OFFSETS = [[124, 186, 248, 310, 372, 434, 496, 558, 620, 682, 744, 806, 868, 930, 992, 1054, 1116, 1178, 1240, 1302, 1364, 1426, 1488, 0], [-100, -75, -50, -25, 25, 50, 75, 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [-20, -15, -10, -5, 5, 10, 15, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [-4, -3, -2, -1, 1, 2, 3, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]];
+const AUTOSEQ_TEMPO_LOW = 0.25;
+const AUTOSEQ_TEMPO_TOP = 4.0;
+const AUTOSEQ_AT_MIN = 125.0;
+const AUTOSEQ_AT_MAX = 50.0;
+const AUTOSEQ_K = (AUTOSEQ_AT_MAX - AUTOSEQ_AT_MIN) / (AUTOSEQ_TEMPO_TOP - AUTOSEQ_TEMPO_LOW);
+const AUTOSEQ_C = AUTOSEQ_AT_MIN - AUTOSEQ_K * AUTOSEQ_TEMPO_LOW;
+const AUTOSEEK_AT_MIN = 25.0;
+const AUTOSEEK_AT_MAX = 15.0;
+const AUTOSEEK_K = (AUTOSEEK_AT_MAX - AUTOSEEK_AT_MIN) / (AUTOSEQ_TEMPO_TOP - AUTOSEQ_TEMPO_LOW);
+const AUTOSEEK_C = AUTOSEEK_AT_MIN - AUTOSEEK_K * AUTOSEQ_TEMPO_LOW;
+class Stretch extends AbstractFifoSamplePipe {
+  constructor(createBuffers) {
+    super(createBuffers);
+    this._quickSeek = true;
+    this.midBufferDirty = false;
+    this.midBuffer = null;
+    this.overlapLength = 0;
+    this.autoSeqSetting = true;
+    this.autoSeekSetting = true;
+    this._tempo = 1;
+    this.setParameters(44100, DEFAULT_SEQUENCE_MS, DEFAULT_SEEKWINDOW_MS, DEFAULT_OVERLAP_MS);
+  }
+  clear() {
+    super.clear();
+    this.clearMidBuffer();
+  }
+  clearMidBuffer() {
+    this.midBufferDirty = false;
+    this.midBuffer = null;
+    if (this.refMidBuffer) {
+      this.refMidBuffer.fill(0);
+    }
+    this.skipFract = 0;
+  }
+  setParameters(sampleRate, sequenceMs, seekWindowMs, overlapMs) {
+    if (sampleRate > 0) {
+      this.sampleRate = sampleRate;
+    }
+    if (overlapMs > 0) {
+      this.overlapMs = overlapMs;
+    }
+    if (sequenceMs > 0) {
+      this.sequenceMs = sequenceMs;
+      this.autoSeqSetting = false;
+    } else {
+      this.autoSeqSetting = true;
+    }
+    if (seekWindowMs > 0) {
+      this.seekWindowMs = seekWindowMs;
+      this.autoSeekSetting = false;
+    } else {
+      this.autoSeekSetting = true;
+    }
+    this.calculateSequenceParameters();
+    this.calculateOverlapLength(this.overlapMs);
+    this.tempo = this._tempo;
+  }
+  set tempo(newTempo) {
+    let intskip;
+    this._tempo = newTempo;
+    this.calculateSequenceParameters();
+    this.nominalSkip = this._tempo * (this.seekWindowLength - this.overlapLength);
+    this.skipFract = 0;
+    intskip = Math.floor(this.nominalSkip + 0.5);
+    this.sampleReq = Math.max(intskip + this.overlapLength, this.seekWindowLength) + this.seekLength;
+  }
+  get tempo() {
+    return this._tempo;
+  }
+  get inputChunkSize() {
+    return this.sampleReq;
+  }
+  get outputChunkSize() {
+    return this.overlapLength + Math.max(0, this.seekWindowLength - 2 * this.overlapLength);
+  }
+  calculateOverlapLength(overlapInMsec = 0) {
+    let newOvl;
+    newOvl = this.sampleRate * overlapInMsec / 1000;
+    newOvl = newOvl < 16 ? 16 : newOvl;
+    newOvl -= newOvl % 8;
+    this.overlapLength = newOvl;
+    this.refMidBuffer = new Float32Array(this.overlapLength * 2);
+    this.midBuffer = new Float32Array(this.overlapLength * 2);
+  }
+  checkLimits(x, mi, ma) {
+    return x < mi ? mi : x > ma ? ma : x;
+  }
+  calculateSequenceParameters() {
+    let seq;
+    let seek;
+    if (this.autoSeqSetting) {
+      seq = AUTOSEQ_C + AUTOSEQ_K * this._tempo;
+      seq = this.checkLimits(seq, AUTOSEQ_AT_MAX, AUTOSEQ_AT_MIN);
+      this.sequenceMs = Math.floor(seq + 0.5);
+    }
+    if (this.autoSeekSetting) {
+      seek = AUTOSEEK_C + AUTOSEEK_K * this._tempo;
+      seek = this.checkLimits(seek, AUTOSEEK_AT_MAX, AUTOSEEK_AT_MIN);
+      this.seekWindowMs = Math.floor(seek + 0.5);
+    }
+    this.seekWindowLength = Math.floor(this.sampleRate * this.sequenceMs / 1000);
+    this.seekLength = Math.floor(this.sampleRate * this.seekWindowMs / 1000);
+  }
+  set quickSeek(enable) {
+    this._quickSeek = enable;
+  }
+  clone() {
+    const result = new Stretch();
+    result.tempo = this._tempo;
+    result.setParameters(this.sampleRate, this.sequenceMs, this.seekWindowMs, this.overlapMs);
+    return result;
+  }
+  seekBestOverlapPosition() {
+    return this._quickSeek ? this.seekBestOverlapPositionStereoQuick() : this.seekBestOverlapPositionStereo();
+  }
+  seekBestOverlapPositionStereo() {
+    let bestOffset;
+    let bestCorrelation;
+    let correlation;
+    let i = 0;
+    this.preCalculateCorrelationReferenceStereo();
+    bestOffset = 0;
+    bestCorrelation = Number.MIN_VALUE;
+    for (; i < this.seekLength; i = i + 1) {
+      correlation = this.calculateCrossCorrelationStereo(2 * i, this.refMidBuffer);
+      if (correlation > bestCorrelation) {
+        bestCorrelation = correlation;
+        bestOffset = i;
+      }
+    }
+    return bestOffset;
+  }
+  seekBestOverlapPositionStereoQuick() {
+    let bestOffset;
+    let bestCorrelation;
+    let correlation;
+    let scanCount = 0;
+    let correlationOffset;
+    let tempOffset;
+    this.preCalculateCorrelationReferenceStereo();
+    bestCorrelation = Number.MIN_VALUE;
+    bestOffset = 0;
+    correlationOffset = 0;
+    tempOffset = 0;
+    for (; scanCount < 4; scanCount = scanCount + 1) {
+      let j = 0;
+      while (_SCAN_OFFSETS[scanCount][j]) {
+        tempOffset = correlationOffset + _SCAN_OFFSETS[scanCount][j];
+        if (tempOffset >= this.seekLength) {
+          break;
+        }
+        correlation = this.calculateCrossCorrelationStereo(2 * tempOffset, this.refMidBuffer);
+        if (correlation > bestCorrelation) {
+          bestCorrelation = correlation;
+          bestOffset = tempOffset;
+        }
+        j = j + 1;
+      }
+      correlationOffset = bestOffset;
+    }
+    return bestOffset;
+  }
+  preCalculateCorrelationReferenceStereo() {
+    let i = 0;
+    let context;
+    let temp;
+    for (; i < this.overlapLength; i = i + 1) {
+      temp = i * (this.overlapLength - i);
+      context = i * 2;
+      this.refMidBuffer[context] = this.midBuffer[context] * temp;
+      this.refMidBuffer[context + 1] = this.midBuffer[context + 1] * temp;
+    }
+  }
+  calculateCrossCorrelationStereo(mixingPosition, compare) {
+    const mixing = this._inputBuffer.vector;
+    mixingPosition += this._inputBuffer.startIndex;
+    let correlation = 0;
+    let i = 2;
+    const calcLength = 2 * this.overlapLength;
+    let mixingOffset;
+    for (; i < calcLength; i = i + 2) {
+      mixingOffset = i + mixingPosition;
+      correlation += mixing[mixingOffset] * compare[i] + mixing[mixingOffset + 1] * compare[i + 1];
+    }
+    return correlation;
+  }
+  overlap(overlapPosition) {
+    this.overlapStereo(2 * overlapPosition);
+  }
+  overlapStereo(inputPosition) {
+    const input = this._inputBuffer.vector;
+    inputPosition += this._inputBuffer.startIndex;
+    const output = this._outputBuffer.vector;
+    const outputPosition = this._outputBuffer.endIndex;
+    let i = 0;
+    let context;
+    let tempFrame;
+    const frameScale = 1 / this.overlapLength;
+    let fi;
+    let inputOffset;
+    let outputOffset;
+    for (; i < this.overlapLength; i = i + 1) {
+      tempFrame = (this.overlapLength - i) * frameScale;
+      fi = i * frameScale;
+      context = 2 * i;
+      inputOffset = context + inputPosition;
+      outputOffset = context + outputPosition;
+      output[outputOffset + 0] = input[inputOffset + 0] * fi + this.midBuffer[context + 0] * tempFrame;
+      output[outputOffset + 1] = input[inputOffset + 1] * fi + this.midBuffer[context + 1] * tempFrame;
+    }
+  }
+  process() {
+    let offset;
+    let temp;
+    let overlapSkip;
+    if (this.midBuffer === null) {
+      if (this._inputBuffer.frameCount < this.overlapLength) {
+        return;
+      }
+      this.midBuffer = new Float32Array(this.overlapLength * 2);
+      this._inputBuffer.receiveSamples(this.midBuffer, this.overlapLength);
+    }
+    while (this._inputBuffer.frameCount >= this.sampleReq) {
+      offset = this.seekBestOverlapPosition();
+      this._outputBuffer.ensureAdditionalCapacity(this.overlapLength);
+      this.overlap(Math.floor(offset));
+      this._outputBuffer.put(this.overlapLength);
+      temp = this.seekWindowLength - 2 * this.overlapLength;
+      if (temp > 0) {
+        this._outputBuffer.putBuffer(this._inputBuffer, offset + this.overlapLength, temp);
+      }
+      const start = this._inputBuffer.startIndex + 2 * (offset + this.seekWindowLength - this.overlapLength);
+      this.midBuffer.set(this._inputBuffer.vector.subarray(start, start + 2 * this.overlapLength));
+      this.skipFract += this.nominalSkip;
+      overlapSkip = Math.floor(this.skipFract);
+      this.skipFract -= overlapSkip;
+      this._inputBuffer.receive(overlapSkip);
+    }
+  }
+}
+
+const testFloatEqual = function (a, b) {
+  return (a > b ? a - b : b - a) > 1e-10;
+};
+
+class SoundTouch {
+  constructor() {
+    this.transposer = new RateTransposer(false);
+    this.stretch = new Stretch(false);
+    this._inputBuffer = new FifoSampleBuffer();
+    this._intermediateBuffer = new FifoSampleBuffer();
+    this._outputBuffer = new FifoSampleBuffer();
+    this._rate = 0;
+    this._tempo = 0;
+    this.virtualPitch = 1.0;
+    this.virtualRate = 1.0;
+    this.virtualTempo = 1.0;
+    this.calculateEffectiveRateAndTempo();
+  }
+  clear() {
+    this.transposer.clear();
+    this.stretch.clear();
+  }
+  clone() {
+    const result = new SoundTouch();
+    result.rate = this.rate;
+    result.tempo = this.tempo;
+    return result;
+  }
+  get rate() {
+    return this._rate;
+  }
+  set rate(rate) {
+    this.virtualRate = rate;
+    this.calculateEffectiveRateAndTempo();
+  }
+  set rateChange(rateChange) {
+    this._rate = 1.0 + 0.01 * rateChange;
+  }
+  get tempo() {
+    return this._tempo;
+  }
+  set tempo(tempo) {
+    this.virtualTempo = tempo;
+    this.calculateEffectiveRateAndTempo();
+  }
+  set tempoChange(tempoChange) {
+    this.tempo = 1.0 + 0.01 * tempoChange;
+  }
+  set pitch(pitch) {
+    this.virtualPitch = pitch;
+    this.calculateEffectiveRateAndTempo();
+  }
+  set pitchOctaves(pitchOctaves) {
+    this.pitch = Math.exp(0.69314718056 * pitchOctaves);
+    this.calculateEffectiveRateAndTempo();
+  }
+  set pitchSemitones(pitchSemitones) {
+    this.pitchOctaves = pitchSemitones / 12.0;
+  }
+  get inputBuffer() {
+    return this._inputBuffer;
+  }
+  get outputBuffer() {
+    return this._outputBuffer;
+  }
+  calculateEffectiveRateAndTempo() {
+    const previousTempo = this._tempo;
+    const previousRate = this._rate;
+    this._tempo = this.virtualTempo / this.virtualPitch;
+    this._rate = this.virtualRate * this.virtualPitch;
+    if (testFloatEqual(this._tempo, previousTempo)) {
+      this.stretch.tempo = this._tempo;
+    }
+    if (testFloatEqual(this._rate, previousRate)) {
+      this.transposer.rate = this._rate;
+    }
+    if (this._rate > 1.0) {
+      if (this._outputBuffer != this.transposer.outputBuffer) {
+        this.stretch.inputBuffer = this._inputBuffer;
+        this.stretch.outputBuffer = this._intermediateBuffer;
+        this.transposer.inputBuffer = this._intermediateBuffer;
+        this.transposer.outputBuffer = this._outputBuffer;
+      }
+    } else {
+      if (this._outputBuffer != this.stretch.outputBuffer) {
+        this.transposer.inputBuffer = this._inputBuffer;
+        this.transposer.outputBuffer = this._intermediateBuffer;
+        this.stretch.inputBuffer = this._intermediateBuffer;
+        this.stretch.outputBuffer = this._outputBuffer;
+      }
+    }
+  }
+  process() {
+    if (this._rate > 1.0) {
+      this.stretch.process();
+      this.transposer.process();
+    } else {
+      this.transposer.process();
+      this.stretch.process();
+    }
+  }
+}
+
+class WebAudioBufferSource {
+  constructor(buffer) {
+    this.buffer = buffer;
+    this._position = 0;
+  }
+  get dualChannel() {
+    return this.buffer.numberOfChannels > 1;
+  }
+  get position() {
+    return this._position;
+  }
+  set position(value) {
+    this._position = value;
+  }
+  extract(target, numFrames = 0, position = 0) {
+    this.position = position;
+    let left = this.buffer.getChannelData(0);
+    let right = this.dualChannel ? this.buffer.getChannelData(1) : this.buffer.getChannelData(0);
+    let i = 0;
+    for (; i < numFrames; i++) {
+      target[i * 2] = left[i + position];
+      target[i * 2 + 1] = right[i + position];
+    }
+    return Math.min(numFrames, left.length - position);
+  }
+}
+
+const getWebAudioNode = function (context, filter, sourcePositionCallback = noop, bufferSize = 4096) {
+  const node = context.createScriptProcessor(bufferSize, 2, 2);
+  const samples = new Float32Array(bufferSize * 2);
+  node.onaudioprocess = event => {
+    let left = event.outputBuffer.getChannelData(0);
+    let right = event.outputBuffer.getChannelData(1);
+    let framesExtracted = filter.extract(samples, bufferSize);
+    sourcePositionCallback(filter.sourcePosition);
+    if (framesExtracted === 0) {
+      filter.onEnd();
+    }
+    let i = 0;
+    for (; i < framesExtracted; i++) {
+      left[i] = samples[i * 2];
+      right[i] = samples[i * 2 + 1];
+    }
+  };
+  return node;
+};
+
+const pad = function (n, width, z) {
+  z = z || '0';
+  n = n + '';
+  return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+};
+const minsSecs = function (secs) {
+  const mins = Math.floor(secs / 60);
+  const seconds = secs - mins * 60;
+  return `${mins}:${pad(parseInt(seconds), 2)}`;
+};
+
+const onUpdate = function (sourcePosition) {
+  const currentTimePlayed = this.timePlayed;
+  const sampleRate = this.sampleRate;
+  this.sourcePosition = sourcePosition;
+  this.timePlayed = sourcePosition / sampleRate;
+  if (currentTimePlayed !== this.timePlayed) {
+    const timePlayed = new CustomEvent('play', {
+      detail: {
+        timePlayed: this.timePlayed,
+        formattedTimePlayed: this.formattedTimePlayed,
+        percentagePlayed: this.percentagePlayed
+      }
+    });
+    this._node.dispatchEvent(timePlayed);
+  }
+};
+class PitchShifter {
+  constructor(context, buffer, bufferSize, onEnd = noop) {
+    this._soundtouch = new SoundTouch();
+    const source = new WebAudioBufferSource(buffer);
+    this.timePlayed = 0;
+    this.sourcePosition = 0;
+    this._filter = new SimpleFilter(source, this._soundtouch, onEnd);
+    this._node = getWebAudioNode(context, this._filter, sourcePostion => onUpdate.call(this, sourcePostion), bufferSize);
+    this.tempo = 1;
+    this.rate = 1;
+    this.duration = buffer.duration;
+    this.sampleRate = context.sampleRate;
+    this.listeners = [];
+  }
+  get formattedDuration() {
+    return minsSecs(this.duration);
+  }
+  get formattedTimePlayed() {
+    return minsSecs(this.timePlayed);
+  }
+  get percentagePlayed() {
+    return 100 * this._filter.sourcePosition / (this.duration * this.sampleRate);
+  }
+  set percentagePlayed(perc) {
+    this._filter.sourcePosition = parseInt(perc * this.duration * this.sampleRate);
+    this.sourcePosition = this._filter.sourcePosition;
+    this.timePlayed = this.sourcePosition / this.sampleRate;
+  }
+  get node() {
+    return this._node;
+  }
+  set pitch(pitch) {
+    this._soundtouch.pitch = pitch;
+  }
+  set pitchSemitones(semitone) {
+    this._soundtouch.pitchSemitones = semitone;
+  }
+  set rate(rate) {
+    this._soundtouch.rate = rate;
+  }
+  set tempo(tempo) {
+    this._soundtouch.tempo = tempo;
+  }
+  connect(toNode) {
+    this._node.connect(toNode);
+  }
+  disconnect() {
+    this._node.disconnect();
+  }
+  on(eventName, cb) {
+    this.listeners.push({
+      name: eventName,
+      cb: cb
+    });
+    this._node.addEventListener(eventName, event => cb(event.detail));
+  }
+  off(eventName = null) {
+    let listeners = this.listeners;
+    if (eventName) {
+      listeners = listeners.filter(e => e.name === eventName);
+    }
+    listeners.forEach(e => {
+      this._node.removeEventListener(e.name, event => e.cb(event.detail));
+    });
+  }
+}
+</script>
+<script>
+(function(){
+  const state = {
+    audioBuffer: null,       // 元のAudioBuffer
+    edits: [],                // {id, type:'region', start, end, dir, pct} or {type:'global', dir, pct}
+    globalEdit: null,
+    processedBuffer: null,    // 加工済みAudioBuffer(再生/書き出し用)
+    isProcessing: false,
+    selecting: 'start'        // 次のタップでstart/endどちらを設定するか
+  };
+  let audioCtx = null;
+  let playSource = null;
+  let editIdCounter = 1;
+
+  const el = (id) => document.getElementById(id);
+
+  // ダイアログ(alert/confirm)はプレビュー等の埋め込み環境でブロックされるため、トースト表示で通知する
+  const toastEl = document.createElement('div');
+  toastEl.className = 'toast';
+  document.body.appendChild(toastEl);
+  let toastTimer = null;
+  function showToast(msg, ms) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove('show'), ms || 4000);
+  }
+
+  // 使い方ガイドの開閉
+  const helpOverlay = el('helpOverlay');
+  el('helpBtn').addEventListener('click', () => helpOverlay.classList.add('show'));
+  el('helpCloseBtn').addEventListener('click', () => helpOverlay.classList.remove('show'));
+  helpOverlay.addEventListener('click', (e) => {
+    if (e.target === helpOverlay) helpOverlay.classList.remove('show');
+  });
+  const emptyState = el('emptyState'), mainUI = el('mainUI'), footerBar = el('footerBar');
+  const fileInput = el('fileInput');
+  const waveCanvas = el('wave');
+  const timeLabels = el('timeLabels');
+  const startInput = el('startInput'), endInput = el('endInput');
+  const regionToggle = el('regionToggle'), regionPct = el('regionPct'), regionPctVal = el('regionPctVal');
+  const applyRegionBtn = el('applyRegionBtn');
+  const appliedList = el('appliedList');
+  const globalToggle = el('globalToggle'), globalPct = el('globalPct'), globalLabel = el('globalLabel');
+  const applyGlobalBtn = el('applyGlobalBtn');
+  const micBtn = el('micBtn'), micStatus = el('micStatus');
+  const statusBar = el('statusBar'), statusText = el('statusText');
+  const playBtn = el('playBtn'), saveBtn = el('saveBtn'), resetBtn = el('resetBtn');
+
+  const modeToggle = el('modeToggle');
+  const regionSection = el('regionSection');
+  const globalSection = el('globalSection');
+  const modePlaceholder = el('modePlaceholder');
+  const tapHint = el('tapHint');
+  modeToggle.addEventListener('click', (e) => {
+    const btn = e.target.closest('button'); if (!btn) return;
+    const mode = btn.dataset.mode;
+    currentMode = mode;
+    [...modeToggle.children].forEach(b => b.classList.toggle('active', b===btn));
+    regionSection.classList.toggle('hidden', mode !== 'region');
+    globalSection.classList.toggle('hidden', mode !== 'global');
+    tapHint.classList.toggle('hidden', mode !== 'region');
+    resetSelectionBtn.classList.toggle('hidden', mode !== 'region');
+    modePlaceholder.classList.add('hidden');
+    if (state.audioBuffer) drawWave(state.audioBuffer);
+  });
+
+  let regionDir = 'slow';
+  let globalDir = 'slow';
+  let currentMode = null; // 'region' | 'global' | null
+
+  function fmtTime(sec) {
+    const m = Math.floor(sec/60), s = (sec%60).toFixed(1).padStart(4,'0');
+    return m + ':' + s;
+  }
+
+  // ---------- ファイル読み込み ----------
+  fileInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const arrayBuf = await file.arrayBuffer();
+    try {
+      const buf = await audioCtx.decodeAudioData(arrayBuf);
+      state.audioBuffer = buf;
+      state.processedBuffer = buf;
+      state.edits = [];
+      state.globalEdit = null;
+      emptyState.classList.add('hidden');
+      mainUI.classList.remove('hidden');
+      footerBar.classList.remove('hidden');
+      startInput.value = '';
+      endInput.value = '';
+      state.selecting = 'start';
+      updateTapHint();
+      drawWave(buf);
+      playheadLine.style.display = 'block';
+      seekBar.max = Math.round(buf.duration * 1000);
+      seekBar.value = 0;
+      updateSeekUI(0);
+      renderAppliedList();
+      updatePlayExportState();
+    } catch (err) {
+      showToast('この音声ファイルを読み込めませんでした。別のファイル形式で試してください。');
+    }
+  });
+
+  // confirmダイアログは埋め込み環境でブロックされるため、2回タップで確定する方式にする
+  let resetArmed = false, resetArmTimer = null;
+  resetBtn.addEventListener('click', () => {
+    if (!state.audioBuffer) return;
+    if (!resetArmed) {
+      resetArmed = true;
+      resetBtn.textContent = 'もう一度で全消去';
+      showToast('全ての変更を取り消します。確定するにはもう一度タップしてください');
+      resetArmTimer = setTimeout(() => { resetArmed = false; resetBtn.textContent = '↺'; }, 3500);
+      return;
+    }
+    clearTimeout(resetArmTimer);
+    resetArmed = false;
+    resetBtn.textContent = '↺';
+    if (typeof stopPlayback === 'function') stopPlayback();
+    state.edits = [];
+    state.globalEdit = null;
+    state.processedBuffer = state.audioBuffer;
+    seekBar.max = Math.round(state.processedBuffer.duration * 1000);
+    updateSeekUI(0);
+    renderAppliedList();
+    updatePlayExportState();
+    showToast('全ての変更を取り消しました');
+  });
+
+  // ---------- 波形描画 ----------
+  function drawWave(buffer) {
+    const canvas = waveCanvas;
+    const dpr = window.devicePixelRatio || 1;
+    const cssWidth = canvas.clientWidth || 400;
+    canvas.width = cssWidth * dpr;
+    canvas.height = 84 * dpr;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    const data = buffer.getChannelData(0);
+    const barCount = 90;
+    const step = Math.floor(data.length / barCount);
+    ctx.clearRect(0,0,cssWidth,84);
+    const barW = cssWidth / barCount;
+    for (let i=0;i<barCount;i++) {
+      let max = 0;
+      const start = i*step;
+      for (let j=0;j<step;j+=4) {
+        const v = Math.abs(data[start+j] || 0);
+        if (v > max) max = v;
+      }
+      const h = Math.max(3, max * 78);
+      const sv = parseFloat(startInput.value), ev = parseFloat(endInput.value);
+      const t = (i/barCount) * buffer.duration;
+      const inSel = currentMode === 'region' && !isNaN(sv) && !isNaN(ev) && t >= Math.min(sv,ev) && t <= Math.max(sv,ev) && Math.abs(ev-sv) > 0.01;
+      ctx.fillStyle = inSel ? '#ff8ad1' : '#3a4160';
+      ctx.fillRect(i*barW+0.5, (84-h)/2, barW-1, h);
+    }
+    timeLabels.innerHTML = '';
+    for (let i=0;i<=4;i++) {
+      const span = document.createElement('span');
+      span.textContent = fmtTime(buffer.duration * i/4);
+      timeLabels.appendChild(span);
+    }
+    // start/endマーカー線(区間モードの時だけ表示。入力が空なら描かない)
+    if (currentMode !== 'region') return;
+    const s = parseFloat(startInput.value), en = parseFloat(endInput.value);
+    if (!isNaN(s) && s >= 0 && s <= buffer.duration) {
+      const x = (s/buffer.duration) * cssWidth;
+      ctx.strokeStyle = '#4ade80'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 84); ctx.stroke();
+      ctx.fillStyle = '#4ade80'; ctx.font = 'bold 9px sans-serif';
+      ctx.fillText('開始', Math.min(cssWidth-24, x+3), 11);
+    }
+    if (!isNaN(en) && en > 0 && en <= buffer.duration) {
+      const x = (en/buffer.duration) * cssWidth;
+      ctx.strokeStyle = '#ff8ad1'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 84); ctx.stroke();
+      ctx.fillStyle = '#ff8ad1'; ctx.font = 'bold 9px sans-serif';
+      ctx.fillText('終了', Math.max(2, x-24), 11);
+    }
+  }
+
+  const tapHintTarget = el('tapHintTarget');
+  const resetSelectionBtn = el('resetSelectionBtn');
+
+  function updateTapHint() {
+    tapHintTarget.textContent = state.selecting === 'start' ? '開始位置' : '終了位置';
+  }
+  resetSelectionBtn.addEventListener('click', () => {
+    startInput.value = '';
+    endInput.value = '';
+    state.selecting = 'start';
+    updateTapHint();
+    if (state.audioBuffer) drawWave(state.audioBuffer);
+    showToast('選択をクリアしました。波形をタップして開始位置から選び直してください');
+  });
+
+  waveCanvas.addEventListener('click', (e) => {
+    if (!state.audioBuffer) return;
+    if (currentMode !== 'region') return; // 区間モードの時だけ開始/終了を選択できる
+    const rect = waveCanvas.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const ratio = clickX / rect.width;
+    const t = Math.max(0, Math.min(state.audioBuffer.duration, ratio * state.audioBuffer.duration));
+
+    // 即座に光るフラッシュ(タップ位置がすぐ分かるように)
+    const flash = document.createElement('div');
+    flash.className = 'tap-flash';
+    flash.style.left = clickX + 'px';
+    document.querySelector('.wave-wrap').appendChild(flash);
+    setTimeout(() => flash.remove(), 420);
+
+    if (state.selecting === 'start') {
+      startInput.value = t.toFixed(1);
+      state.selecting = 'end';
+    } else {
+      endInput.value = t.toFixed(1);
+      state.selecting = 'start';
+    }
+    updateTapHint();
+    drawWave(state.audioBuffer);
+  });
+  startInput.addEventListener('change', () => state.audioBuffer && drawWave(state.audioBuffer));
+  endInput.addEventListener('change', () => state.audioBuffer && drawWave(state.audioBuffer));
+
+  // ---------- トグル/スライダー ----------
+  regionToggle.addEventListener('click', (e) => {
+    const btn = e.target.closest('button'); if (!btn) return;
+    regionDir = btn.dataset.dir;
+    [...regionToggle.children].forEach(b => b.classList.toggle('active', b===btn));
+  });
+  regionPct.addEventListener('input', () => regionPctVal.textContent = regionPct.value + '%');
+
+  globalToggle.addEventListener('click', (e) => {
+    const btn = e.target.closest('button'); if (!btn) return;
+    globalDir = btn.dataset.dir;
+    [...globalToggle.children].forEach(b => b.classList.toggle('active', b===btn));
+    updateGlobalLabel();
+  });
+  globalPct.addEventListener('input', updateGlobalLabel);
+  function updateGlobalLabel() {
+    globalLabel.textContent = `全体を ${globalPct.value}% ${globalDir==='slow'?'遅く':'速く'}する`;
+  }
+
+  // ---------- 区間の適用 ----------
+  applyRegionBtn.addEventListener('click', () => {
+    const s = parseFloat(startInput.value), e = parseFloat(endInput.value);
+    if (isNaN(s) || isNaN(e) || e <= s) { showToast('開始と終了の時間を正しく指定してください'); return; }
+    if (e - s < 0.3) { showToast('区間が短すぎます(0.3秒以上にしてください)'); return; }
+    addRegionEdit(s, e, regionDir, parseInt(regionPct.value));
+  });
+
+  function addRegionEdit(s, e, dir, pct) {
+    state.edits.push({ id: editIdCounter++, type:'region', start:s, end:e, dir, pct });
+    renderAppliedList();
+    rebuildProcessedBuffer();
+  }
+
+  function setGlobalEdit(dir, pct) {
+    state.globalEdit = { dir, pct };
+    renderAppliedList();
+    rebuildProcessedBuffer();
+  }
+
+  function renderAppliedList() {
+    appliedList.innerHTML = '';
+    if (state.edits.length === 0 && !state.globalEdit) {
+      const note = document.createElement('div');
+      note.className = 'empty-list-note';
+      note.textContent = 'まだ変更はありません';
+      appliedList.appendChild(note);
+      return;
+    }
+    state.edits.forEach(ed => {
+      const chip = document.createElement('div');
+      chip.className = 'chip';
+      chip.innerHTML = `<span class="txt">${fmtTime(ed.start)} – ${fmtTime(ed.end)} を <b>${ed.pct}%${ed.dir==='slow'?'遅く':'速く'}</b></span>`;
+      const x = document.createElement('button');
+      x.className = 'x'; x.textContent = '✕';
+      x.addEventListener('click', () => {
+        state.edits = state.edits.filter(e => e.id !== ed.id);
+        renderAppliedList();
+        rebuildProcessedBuffer();
+      });
+      chip.appendChild(x);
+      appliedList.appendChild(chip);
+    });
+    if (state.globalEdit) {
+      const chip = document.createElement('div');
+      chip.className = 'chip';
+      chip.innerHTML = `<span class="txt">全体を <b>${state.globalEdit.pct}%${state.globalEdit.dir==='slow'?'遅く':'速く'}</b></span>`;
+      const x = document.createElement('button');
+      x.className = 'x'; x.textContent = '✕';
+      x.addEventListener('click', () => {
+        state.globalEdit = null;
+        renderAppliedList();
+        rebuildProcessedBuffer();
+      });
+      chip.appendChild(x);
+      appliedList.appendChild(chip);
+    }
+  }
+
+  // グローバル調整は区間モードと統一し、明示的な「適用」ボタンで確定する
+  applyGlobalBtn.addEventListener('click', () => {
+    setGlobalEdit(globalDir, parseInt(globalPct.value));
+  });
+
+  // ---------- WSOLAタイムストレッチ処理 ----------
+  // 通常はWeb Workerでバックグラウンド実行。Workerが使えない環境(アプリ内プレビュー等)では
+  // メインスレッドにフォールバックして動作する。
+  function computeSpeed(dir, pct) {
+    return dir === 'slow' ? 1/(1+pct/100) : 1/(1-pct/100);
+  }
+
+  function wsolaStretch(channels, speed, sampleRate, progressCb) {
+    // SoundTouchエンジン(実績あるタイムストレッチ)による処理。音程は保持される。
+    // speedの定義: 出力長 = 入力長 / speed(従来と互換)
+    var inLen = channels[0].length;
+    var isMono = channels.length === 1;
+    var left = channels[0];
+    var right = isMono ? channels[0] : channels[1];
+    var expectedLen = Math.round(inLen / speed);
+    var padFrames = 16384;
+    var totalSrc = inLen + padFrames;
+    var source = {
+      extract: function(target, numFrames, position) {
+        var n = Math.min(numFrames, Math.max(0, totalSrc - position));
+        for (var i=0;i<n;i++) {
+          var p = position + i;
+          if (p < inLen) { target[i*2] = left[p]; target[i*2+1] = right[p]; }
+          else { target[i*2] = 0; target[i*2+1] = 0; }
+        }
+        return n;
+      }
+    };
+    var st = new SoundTouch();
+    st.tempo = speed;
+    var filter = new SimpleFilter(source, st);
+    var outL = new Float32Array(expectedLen);
+    var outR = new Float32Array(expectedLen);
+    var buf = new Float32Array(16384*2);
+    var written = 0;
+    var lastReport = 0;
+    while (written < expectedLen) {
+      var n = filter.extract(buf, 16384);
+      if (n <= 0) break;
+      var take = Math.min(n, expectedLen - written);
+      for (var i=0;i<take;i++) { outL[written+i]=buf[i*2]; outR[written+i]=buf[i*2+1]; }
+      written += take;
+      if (progressCb && written - lastReport > 220500) { // 約5秒分ごとに報告
+        progressCb(Math.min(0.99, written/expectedLen));
+        lastReport = written;
+      }
+    }
+    return isMono ? [outL] : [outL, outR];
+  }
+
+  function processAllEdits(channels, sampleRate, edits, globalEdit, progress) {
+    var numCh = channels.length;
+    var totalLen = channels[0].length;
+    var globalWeight = globalEdit ? 0.7 : 1;
+    var finalChannels;
+    if (edits.length === 0) {
+      finalChannels = channels;
+      progress(Math.round(100*globalWeight));
+    } else {
+      var sorted = edits.slice().sort(function(a,b){ return a.start-b.start; });
+      var segments = [];
+      var cursor = 0;
+      for (var k=0;k<sorted.length;k++) {
+        var ed = sorted[k];
+        var s = Math.max(0, Math.round(ed.start * sampleRate));
+        var en = Math.min(totalLen, Math.round(ed.end * sampleRate));
+        if (s > cursor) segments.push({ s: cursor, e: s, speed: 1 });
+        segments.push({ s: s, e: en, speed: computeSpeed(ed.dir, ed.pct) });
+        cursor = Math.max(cursor, en);
+      }
+      if (cursor < totalLen) segments.push({ s: cursor, e: totalLen, speed: 1 });
+      if (segments.length === 0) segments.push({ s: 0, e: totalLen, speed: 1 });
+
+      var outChunks = [];
+      for (var c=0;c<numCh;c++) outChunks.push([]);
+      var done = 0;
+      for (var g=0; g<segments.length; g++) {
+        var seg = segments[g];
+        var slice = channels.map(function(ch){ return ch.subarray(seg.s, seg.e); });
+        var segBase = (done/segments.length) * 100 * globalWeight;
+        var segSpan = (1/segments.length) * 100 * globalWeight;
+        var processed = seg.speed === 1 ? slice : wsolaStretch(slice, seg.speed, sampleRate, function(frac) {
+          progress(Math.round(segBase + frac*segSpan));
+        });
+        for (var c2=0;c2<numCh;c2++) outChunks[c2].push(processed[c2]);
+        done++;
+        progress(Math.round((done/segments.length)*100*globalWeight));
+      }
+      finalChannels = outChunks.map(function(chunks) {
+        var len = 0;
+        for (var i=0;i<chunks.length;i++) len += chunks[i].length;
+        var merged = new Float32Array(len);
+        var off = 0;
+        for (var i2=0;i2<chunks.length;i2++) { merged.set(chunks[i2], off); off += chunks[i2].length; }
+        return merged;
+      });
+    }
+    if (globalEdit) {
+      var speed = computeSpeed(globalEdit.dir, globalEdit.pct);
+      finalChannels = wsolaStretch(finalChannels, speed, sampleRate, function(frac) {
+        progress(Math.round(70 + frac*30));
+      });
+    }
+    return finalChannels;
+  }
+
+  // Worker用ソースは、埋め込んだSoundTouchライブラリ+上記の関数をtoString()で転写して生成
+  const stLibText = document.getElementById('soundtouch-lib').textContent;
+  const workerSrc = stLibText + '\n' + computeSpeed.toString() + '\n' + wsolaStretch.toString() + '\n' + processAllEdits.toString() + '\n' +
+    'onmessage = function(e) {' +
+    '  var d = e.data;' +
+    '  var out = processAllEdits(d.channels, d.sampleRate, d.edits, d.globalEdit, function(pct) { postMessage({ type: "progress", pct: pct }); });' +
+    '  postMessage({ type: "done", channels: out, sampleRate: d.sampleRate }, out.map(function(c) { return c.buffer; }));' +
+    '};';
+  const workerBlob = new Blob([workerSrc], { type: 'application/javascript' });
+  let workerURL = null;
+  let workerBroken = false; // Worker実行がブロックされる環境を検出したらtrueにして以後スキップ
+  try { workerURL = URL.createObjectURL(workerBlob); } catch(e) { workerURL = null; }
+
+  let renderGeneration = 0;
+
+  function rebuildProcessedBuffer() {
+    if (!state.audioBuffer) return;
+    renderGeneration++;
+    const myGen = renderGeneration;
+    if (typeof stopPlayback === 'function') stopPlayback();
+    if (state.edits.length === 0 && !state.globalEdit) {
+      state.processedBuffer = state.audioBuffer;
+      seekBar.max = Math.round(state.processedBuffer.duration * 1000);
+      updateSeekUI(0);
+      updatePlayExportState();
+      return;
+    }
+    setProcessing(true, '処理中... 0%');
+    const src = state.audioBuffer;
+    const channels = [];
+    for (let c=0;c<src.numberOfChannels;c++) channels.push(src.getChannelData(c).slice());
+    const editsPayload = state.edits.map(({start,end,dir,pct}) => ({start,end,dir,pct}));
+
+    function applyResult(outCh, sampleRate) {
+      const buf = audioCtx.createBuffer(outCh.length, outCh[0].length, sampleRate);
+      for (let c=0;c<outCh.length;c++) buf.copyToChannel(outCh[c], c);
+      state.processedBuffer = buf;
+      seekBar.max = Math.round(buf.duration * 1000);
+      updateSeekUI(0);
+      setProcessing(false);
+      updatePlayExportState();
+      drawWave(state.audioBuffer);
+    }
+
+    // メインスレッドフォールバック(Workerが使えない/失敗した環境用)
+    // 注意: Workerへ転送済みのchannelsは使えなくなるため、必ず元バッファから取り直す
+    function runMainThreadFallback() {
+      setProcessing(true, '処理中...(この環境では画面が数秒固まることがあります)');
+      setTimeout(() => {
+        if (myGen !== renderGeneration) return;
+        try {
+          const freshChannels = [];
+          for (let c=0;c<src.numberOfChannels;c++) freshChannels.push(src.getChannelData(c).slice());
+          const out = processAllEdits(freshChannels, src.sampleRate, editsPayload, state.globalEdit, () => {});
+          if (myGen !== renderGeneration) return;
+          applyResult(out, src.sampleRate);
+        } catch (err) {
+          console.warn('処理エラー:', err);
+          setProcessing(false);
+          showToast('処理中にエラーが発生しました。もう一度お試しください。');
+        }
+      }, 80);
+    }
+
+    // Workerの生成を試みる。プレビュー環境等でブロックされる場合はメインスレッドで処理
+    let worker = null;
+    if (workerURL && !workerBroken) {
+      try { worker = new Worker(workerURL); } catch (err) { worker = null; }
+    }
+
+    if (!worker) {
+      runMainThreadFallback();
+      return;
+    }
+
+    const safetyTimeout = setTimeout(() => {
+      if (myGen !== renderGeneration) return;
+      setProcessing(false);
+      showToast('処理に時間がかかりすぎたため中断しました。区間を短くするか、もう一度お試しください。');
+      worker.terminate();
+    }, 30000);
+
+    worker.onerror = (err) => {
+      if (myGen !== renderGeneration) { worker.terminate(); return; }
+      clearTimeout(safetyTimeout);
+      worker.terminate();
+      // 実行時にWorkerがブロックされる環境(一部のプレビュー等)。以後はWorkerを試さない
+      workerBroken = true;
+      console.warn('バックグラウンド処理がこの環境では使えないため、メインスレッドで処理します:', err.message || err.type || '詳細不明');
+      runMainThreadFallback();
+    };
+
+    worker.onmessage = (e) => {
+      if (myGen !== renderGeneration) { worker.terminate(); return; } // 新しい変更が来ていたら古い結果は破棄
+      if (e.data.type === 'progress') {
+        setProcessing(true, `処理中... ${e.data.pct}%`);
+      } else if (e.data.type === 'done') {
+        clearTimeout(safetyTimeout);
+        applyResult(e.data.channels, e.data.sampleRate);
+        worker.terminate();
+      }
+    };
+    worker.postMessage({
+      channels, sampleRate: src.sampleRate,
+      edits: editsPayload,
+      globalEdit: state.globalEdit
+    }, channels.map(c=>c.buffer));
+  }
+
+  function setProcessing(on, text) {
+    state.isProcessing = on;
+    statusBar.classList.toggle('show', on);
+    if (text) statusText.textContent = text;
+    applyRegionBtn.disabled = on;
+    saveBtn.disabled = on || !state.processedBuffer;
+    updatePlayExportState();
+  }
+
+  function updatePlayExportState() {
+    const ready = !!state.processedBuffer && !state.isProcessing;
+    playBtn.disabled = !ready;
+    saveBtn.disabled = !ready;
+  }
+
+  // ---------- 再生(一時停止/再開/シーク対応) ----------
+  const playheadLine = el('playheadLine');
+  const seekBar = el('seekBar');
+  const seekFill = el('seekFill');
+  const seekTimeLabel = el('seekTimeLabel');
+
+  let playState = 'stopped'; // 'stopped' | 'playing' | 'paused'
+  let playbackOffset = 0;     // 現在のsourceが開始した位置(秒)
+  let sourceStartCtxTime = 0; // その時のaudioCtx.currentTime
+  let sourceToken = 0;        // stop()による古いonended発火を無視するための世代管理
+  let isScrubbing = false;
+  let phRAF = null;
+
+  function currentPlayPosition() {
+    if (playState === 'stopped') return 0;
+    return playbackOffset + (audioCtx.currentTime - sourceStartCtxTime);
+  }
+
+  function updateSeekUI(posSec) {
+    const dur = state.processedBuffer ? state.processedBuffer.duration : 0;
+    const clamped = Math.max(0, Math.min(dur, posSec));
+    const pct = dur > 0 ? (clamped / dur * 100) : 0;
+    if (!isScrubbing) seekBar.value = Math.round(clamped * 1000);
+    seekFill.style.width = pct + '%';
+    playheadLine.style.left = pct + '%';
+    seekTimeLabel.textContent = fmtTime(clamped) + ' / ' + fmtTime(dur);
+  }
+
+  function startPlayheadLoop() {
+    cancelAnimationFrame(phRAF);
+    const tick = () => {
+      if (playState === 'playing') {
+        const pos = currentPlayPosition();
+        const dur = state.processedBuffer.duration;
+        if (pos >= dur) { updateSeekUI(dur); return; } // onendedに任せる
+        updateSeekUI(pos);
+        phRAF = requestAnimationFrame(tick);
+      }
+    };
+    phRAF = requestAnimationFrame(tick);
+  }
+
+  function stopPlayback() {
+    sourceToken++;
+    if (playSource) { try { playSource.stop(); } catch(e){} playSource = null; }
+    if (audioCtx && audioCtx.state === 'suspended') { audioCtx.resume(); }
+    cancelAnimationFrame(phRAF);
+    playState = 'stopped';
+    playBtn.textContent = '▶ 再生確認';
+    updateSeekUI(0);
+  }
+
+  function playFromOffset(offsetSec) {
+    if (!state.processedBuffer) return;
+    sourceToken++;
+    const myToken = sourceToken;
+    if (playSource) { try { playSource.stop(); } catch(e){} playSource = null; }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const dur = state.processedBuffer.duration;
+    const off = Math.max(0, Math.min(dur - 0.02, offsetSec));
+    playSource = audioCtx.createBufferSource();
+    playSource.buffer = state.processedBuffer;
+    playSource.connect(audioCtx.destination);
+    playSource.onended = () => {
+      if (myToken !== sourceToken) return; // 意図的なstop()による発火は無視
+      playState = 'stopped';
+      playBtn.textContent = '▶ 再生確認';
+      playSource = null;
+      cancelAnimationFrame(phRAF);
+      updateSeekUI(0);
+    };
+    playbackOffset = off;
+    sourceStartCtxTime = audioCtx.currentTime;
+    playSource.start(0, off);
+    playState = 'playing';
+    playBtn.textContent = '⏸ 一時停止';
+    updateSeekUI(off);
+    startPlayheadLoop();
+  }
+
+  playBtn.addEventListener('click', () => {
+    if (!state.processedBuffer) return;
+    if (playState === 'stopped') {
+      playFromOffset(parseFloat(seekBar.value) / 1000 || 0);
+    } else if (playState === 'playing') {
+      audioCtx.suspend();
+      playState = 'paused';
+      playBtn.textContent = '▶ 再開';
+      cancelAnimationFrame(phRAF);
+    } else if (playState === 'paused') {
+      audioCtx.resume();
+      playState = 'playing';
+      playBtn.textContent = '⏸ 一時停止';
+      startPlayheadLoop();
+    }
+  });
+
+  // 再生位置バー:ドラッグ中はラベルだけ追従、離した時点でその位置から再生し直す
+  seekBar.addEventListener('input', () => {
+    if (!state.processedBuffer) return;
+    isScrubbing = true;
+    const t = parseFloat(seekBar.value) / 1000;
+    const pct = (t / state.processedBuffer.duration * 100);
+    playheadLine.style.left = pct + '%';
+    seekFill.style.width = pct + '%';
+    seekTimeLabel.textContent = fmtTime(t) + ' / ' + fmtTime(state.processedBuffer.duration);
+  });
+  seekBar.addEventListener('change', () => {
+    if (!state.processedBuffer) return;
+    const t = parseFloat(seekBar.value) / 1000;
+    isScrubbing = false;
+    playFromOffset(t);
+  });
+
+  // ---------- 書き出し(WAV) ----------
+  saveBtn.addEventListener('click', () => {
+    if (!state.processedBuffer) return;
+    const wavBlob = encodeWAV(state.processedBuffer);
+    const url = URL.createObjectURL(wavBlob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'mdance_tempo_edit.wav';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  });
+
+  function encodeWAV(buffer) {
+    const numCh = buffer.numberOfChannels, sampleRate = buffer.sampleRate;
+    const len = buffer.length;
+    const interleaved = new Float32Array(len * numCh);
+    for (let c=0;c<numCh;c++) {
+      const data = buffer.getChannelData(c);
+      for (let i=0;i<len;i++) interleaved[i*numCh+c] = data[i];
+    }
+    const bytesPerSample = 2;
+    const blockAlign = numCh * bytesPerSample;
+    const dataSize = interleaved.length * bytesPerSample;
+    const bufferArr = new ArrayBuffer(44 + dataSize);
+    const view = new DataView(bufferArr);
+    function writeStr(offset, str) { for (let i=0;i<str.length;i++) view.setUint8(offset+i, str.charCodeAt(i)); }
+    writeStr(0,'RIFF'); view.setUint32(4, 36+dataSize, true); writeStr(8,'WAVE');
+    writeStr(12,'fmt '); view.setUint32(16,16,true); view.setUint16(20,1,true);
+    view.setUint16(22,numCh,true); view.setUint32(24,sampleRate,true);
+    view.setUint32(28,sampleRate*blockAlign,true); view.setUint16(32,blockAlign,true); view.setUint16(34,16,true);
+    writeStr(36,'data'); view.setUint32(40,dataSize,true);
+    let off = 44;
+    for (let i=0;i<interleaved.length;i++) {
+      let s = Math.max(-1, Math.min(1, interleaved[i]));
+      view.setInt16(off, s < 0 ? s*0x8000 : s*0x7FFF, true);
+      off += 2;
+    }
+    return new Blob([bufferArr], { type: 'audio/wav' });
+  }
+
+  // ---------- 音声入力 ----------
+  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let recognizing = false;
+  if (SpeechRec) {
+    const rec = new SpeechRec();
+    rec.lang = 'ja-JP'; rec.interimResults = false; rec.maxAlternatives = 1;
+
+    const micCard = micBtn.closest('.mic-card');
+    function setMicUI(listening, statusText) {
+      recognizing = listening;
+      micBtn.classList.toggle('listening', listening);
+      if (micCard) micCard.classList.toggle('listening', listening);
+      micBtn.textContent = listening ? '⏹' : '🎙️';
+      if (statusText) micStatus.textContent = statusText;
+      micStatus.classList.toggle('on', listening);
+    }
+
+    // エラーコードを日本語メッセージに変換
+    function micErrorText(code) {
+      switch (code) {
+        case 'not-allowed':
+        case 'service-not-allowed':
+          return 'マイクの使用が許可されていません。ブラウザの設定でマイクを許可してください';
+        case 'no-speech':
+          return '音声が聞き取れませんでした。もう一度タップして話してください';
+        case 'audio-capture':
+          return 'マイクが見つかりませんでした。マイクの接続を確認してください';
+        case 'network':
+          return 'ネットワークエラーで音声認識できませんでした';
+        case 'aborted':
+          return '音声入力を中断しました';
+        default:
+          return '音声認識でエラーが発生しました。もう一度タップしてください';
+      }
+    }
+
+    rec.onstart = () => setMicUI(true, '🔴 聞き取り中...(もう一度タップで停止)');
+    rec.onend = () => {
+      // onendは成功・失敗どちらでも必ず呼ばれるので、ここで確実に待機状態へ戻す
+      const wasListening = recognizing;
+      setMicUI(false);
+      if (wasListening) micStatus.textContent = 'タップして話しかけてね';
+    };
+    rec.onerror = (e) => {
+      setMicUI(false, micErrorText(e.error));
+    };
+    rec.onresult = (e) => {
+      const text = e.results[0][0].transcript;
+      micStatus.textContent = `「${text}」`;
+      parseVoiceCommand(text);
+      // 結果を受け取ったら即座にマイクを解放する(iOSでマイクが点きっぱなしになるのを防ぐ)
+      try { rec.stop(); } catch(err) {}
+    };
+
+    // アプリから離れた時(タブ切替・ホームに戻る等)は必ずマイクを止める
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && recognizing) {
+        try { rec.abort(); } catch(err) {}
+        setMicUI(false, 'タップして話しかけてね');
+      }
+    });
+    window.addEventListener('pagehide', () => {
+      if (recognizing) { try { rec.abort(); } catch(err) {} }
+    });
+
+    micBtn.addEventListener('click', () => {
+      if (!state.audioBuffer) { showToast('先に曲を読み込んでください'); return; }
+      if (recognizing) {
+        try { rec.stop(); } catch(e) {}
+        setMicUI(false, 'タップして話しかけてね');
+        return;
+      }
+      try {
+        rec.start();
+      } catch (e) {
+        // 内部状態のズレで開始に失敗した場合は一度リセットしてから再試行する
+        try { rec.abort(); } catch(e2) {}
+        setMicUI(false);
+        setTimeout(() => {
+          try { rec.start(); }
+          catch (e3) { setMicUI(false, '音声認識を開始できませんでした。もう一度タップしてください'); }
+        }, 150);
+      }
+    });
+  } else {
+    micBtn.disabled = true;
+    micStatus.textContent = 'このブラウザは音声入力に対応していません';
+  }
+
+  function toSeconds(min, sec) { return parseFloat(min)*60 + parseFloat(sec); }
+
+  function selectMode(mode) {
+    currentMode = mode;
+    [...modeToggle.children].forEach(b => b.classList.toggle('active', b.dataset.mode===mode));
+    regionSection.classList.toggle('hidden', mode !== 'region');
+    globalSection.classList.toggle('hidden', mode !== 'global');
+    tapHint.classList.toggle('hidden', mode !== 'region');
+    resetSelectionBtn.classList.toggle('hidden', mode !== 'region');
+    modePlaceholder.classList.add('hidden');
+    if (state.audioBuffer) drawWave(state.audioBuffer);
+  }
+
+  // 「1分20秒」「80秒」「80」→秒数に変換
+  function parseTimeToken(token) {
+    let m = token.match(/^(\d+(?:\.\d+)?)分(\d+(?:\.\d+)?)?秒?$/);
+    if (m) return parseFloat(m[1])*60 + (m[2] ? parseFloat(m[2]) : 0);
+    m = token.match(/^(\d+(?:\.\d+)?)秒?$/);
+    if (m) return parseFloat(m[1]);
+    return NaN;
+  }
+
+  function parseVoiceCommand(text) {
+    // 認識テキストを正規化: 空白除去、全角数字→半角、％/パーセント→%
+    let norm = text.replace(/\s/g,'')
+      .replace(/[０-９]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0))
+      .replace(/．/g, '.')
+      .replace(/％/g, '%')
+      .replace(/パーセント/g, '%');
+
+    // 方向: 「速く」「早く」→fast、「遅く」「ゆっくり」→slow
+    const hasFast = /[速早]|はやく/.test(norm);
+    const hasSlow = /遅|ゆっくり|おそく/.test(norm);
+    const dir = hasFast ? 'fast' : 'slow';
+    const pctMatch = norm.match(/(\d+(?:\.\d+)?)\s*%/);
+
+    if (!hasFast && !hasSlow) {
+      micStatus.textContent = `「${text}」→「速く」か「遅く」を含めて話してください`;
+      showToast('例:「12秒から18秒を15%遅く」「全体を3%速く」');
+      return;
+    }
+    if (!pctMatch) {
+      micStatus.textContent = `「${text}」→ 何%変えるか聞き取れませんでした`;
+      showToast('例:「12秒から18秒を15%遅く」のように%を含めて話してください');
+      return;
+    }
+    const pct = Math.round(parseFloat(pctMatch[1]));
+    if (pct < 1 || pct > 50) {
+      showToast('パーセントは1〜50の範囲で指定してください');
+      return;
+    }
+
+    // 全体変更: 「全体」「全部」を含む
+    if (/全体|全部/.test(norm)) {
+      globalPct.value = Math.min(30, pct);
+      [...globalToggle.children].forEach(b => b.classList.toggle('active', b.dataset.dir===dir));
+      globalDir = dir;
+      updateGlobalLabel();
+      selectMode('global');
+      setGlobalEdit(dir, Math.min(30, pct));
+      showToast(`✓ 全体を${Math.min(30, pct)}%${dir==='fast'?'速く':'遅く'}しました`);
+      return;
+    }
+
+    // 区間変更: 「AからB」の時間表現を柔軟に拾う
+    const rangeM = norm.match(/((?:\d+(?:\.\d+)?分)?\d+(?:\.\d+)?秒?)から((?:\d+(?:\.\d+)?分)?\d+(?:\.\d+)?秒?)/);
+    if (rangeM) {
+      const s = parseTimeToken(rangeM[1]);
+      const e = parseTimeToken(rangeM[2]);
+      if (!isNaN(s) && !isNaN(e) && e > s) {
+        if (state.audioBuffer && e > state.audioBuffer.duration + 1) {
+          showToast(`終了時間(${e.toFixed(0)}秒)が曲の長さを超えています`);
+          return;
+        }
+        startInput.value = s.toFixed(1);
+        endInput.value = e.toFixed(1);
+        selectMode('region');
+        drawWave(state.audioBuffer);
+        addRegionEdit(s, e, dir, pct);
+        showToast(`✓ ${fmtTime(s)}〜${fmtTime(e)} を ${pct}%${dir==='fast'?'速く':'遅く'}しました`);
+        return;
+      }
+    }
+    micStatus.textContent = `うまく解析できませんでした:「${text}」`;
+    showToast('例:「12秒から18秒を15%遅く」「1分20秒から1分30秒を10%速く」');
+  }
+
+})();
+</script>
+</body>
+</html>
