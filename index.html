@@ -211,6 +211,12 @@
     font-size: 11px; color: #9096a8; line-height: 1.6; text-align: left;
   }
   .mono-toggle-row input { margin-top: 2px; flex-shrink: 0; }
+  .share-row { margin-top: 14px; }
+  .share-btn {
+    padding: 12px 22px; border-radius: 999px; border: 1px solid #2a3050;
+    background: #151827; color: #cfd2dd; font-size: 13px; font-weight: 700;
+  }
+  .share-btn.copied { background: #22c55e; color: #06210f; border-color: transparent; }
   .export-choice {
     display: block; width: 100%; text-align: left;
     background: #0e1120; border: 1px solid #2a3050; border-radius: 14px;
@@ -244,7 +250,7 @@
   <div class="header">
     <div class="brand"><span class="logo">mDANCE</span><span class="badge">FREE</span></div>
     <div style="display:flex;align-items:center;gap:8px;">
-      <span class="subtitle">テンポチェンジャー <span style="opacity:0.5;">· v16</span></span>
+      <span class="subtitle">テンポチェンジャー <span style="opacity:0.5;">· v18</span></span>
       <button class="home-btn hidden" id="homeBtn" title="曲選択に戻る">🏠</button>
       <button class="help-btn" id="helpBtn">?</button>
     </div>
@@ -298,6 +304,9 @@
       <input type="checkbox" id="monoModeToggle">
       <span>🔋 省メモリモード(長い曲・古いスマホ向け。音はモノラルになります)</span>
     </label>
+    <div class="share-row">
+      <button class="share-btn" id="shareBtn">📤 このアプリを友達に共有</button>
+    </div>
   </div>
 
   <div id="mainUI" class="hidden">
@@ -1539,6 +1548,47 @@ class PitchShifter {
     if (e.target === helpOverlay) helpOverlay.classList.remove('show');
   });
   const emptyState = el('emptyState'), mainUI = el('mainUI'), footerBar = el('footerBar');
+
+  // 共有ボタン: 対応環境ではネイティブ共有シート、非対応ならクリップボードコピーにフォールバック
+  (function setupShareButton() {
+    const shareRow = document.querySelector('.share-row');
+    const shareBtn = el('shareBtn');
+    const url = location.href.split('#')[0].split('?')[0];
+    if (location.protocol === 'file:') { shareRow.classList.add('hidden'); return; }
+
+    async function copyFallback() {
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(url);
+        } else {
+          const ta = document.createElement('textarea');
+          ta.value = url; ta.style.position = 'fixed'; ta.style.opacity = '0';
+          document.body.appendChild(ta); ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+        }
+        shareBtn.textContent = '✓ URLをコピーしました';
+        shareBtn.classList.add('copied');
+        setTimeout(() => { shareBtn.textContent = '📤 このアプリを友達に共有'; shareBtn.classList.remove('copied'); }, 2200);
+      } catch (err) {
+        showToast('コピーに失敗しました。URLを長押しして手動でコピーしてください');
+      }
+    }
+
+    shareBtn.addEventListener('click', async () => {
+      if (navigator.share) {
+        try {
+          await navigator.share({ title: 'mDANCE テンポチェンジャー', text: '曲のテンポを変えられる無料ツールです🎵', url });
+        } catch (err) {
+          // ユーザーがキャンセルした場合(AbortError)は何もしない
+          if (err && err.name !== 'AbortError') copyFallback();
+        }
+      } else {
+        copyFallback();
+      }
+    });
+  })();
+
   const fileInput = el('fileInput');
   const homeBtn = el('homeBtn');
   const monoModeToggle = el('monoModeToggle');
