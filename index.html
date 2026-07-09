@@ -130,16 +130,6 @@
   .mode-toggle button.active {
     background: linear-gradient(90deg, #ff6ec7, #a78bfa); color: #12081a; border-color: transparent;
   }
-  .mic-row { display: flex; align-items: center; gap: 10px; }
-  .mic-btn {
-    width: 52px; height: 52px; border-radius: 50%; border: none; flex-shrink: 0;
-    background: #151827; border: 1px solid #2a3050; color: #e8e9ee; font-size: 20px;
-  }
-  .mic-btn.listening { background: #b91c4c; animation: pulse 1s infinite; }
-  @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(185,28,76,0.5);} 50%{box-shadow:0 0 0 10px rgba(185,28,76,0);} }
-  .mic-status { font-size: 12.5px; color: #9096a8; flex: 1; }
-  .mic-status.on { color: #ff8ad1; }
-  .mic-examples { font-size: 11px; color: #6d738a; margin-top: 8px; line-height: 1.6; }
 
   .status-bar { margin: 0 18px 16px; font-size: 12.5px; color: #7de3a8; display: none; align-items: center; gap: 8px; }
   .status-bar.show { display: flex; }
@@ -230,10 +220,6 @@
   .export-choice-title { font-size: 14px; font-weight: 800; margin-bottom: 4px; }
   .export-choice-sub { font-size: 11.5px; color: #9096a8; }
   .export-progress { text-align: center; font-size: 12.5px; color: #7de3a8; padding: 10px 0; }
-  .mic-card.listening {
-    border-color: #b91c4c;
-    box-shadow: 0 0 14px rgba(185,28,76,0.35);
-  }
 
   /* ---------- 横向き(landscape)対応 ---------- */
   @media (orientation: landscape) {
@@ -242,7 +228,6 @@
     .card { padding: 10px 14px; margin: 10px 18px; }
     .section-label { margin: 10px 18px 6px; }
     .mode-placeholder { margin: 0 18px 10px; padding: 10px; }
-    .mic-examples { display: none; }
     .copyright-note { margin: 0 18px 84px; }
     .footer-bar { padding: 8px 18px calc(8px + env(safe-area-inset-bottom)); }
     .applied-list { margin: 0 18px 10px; }
@@ -259,7 +244,7 @@
   <div class="header">
     <div class="brand"><span class="logo">mDANCE</span><span class="badge">FREE</span></div>
     <div style="display:flex;align-items:center;gap:8px;">
-      <span class="subtitle">テンポチェンジャー <span style="opacity:0.5;">· v15</span></span>
+      <span class="subtitle">テンポチェンジャー <span style="opacity:0.5;">· v16</span></span>
       <button class="home-btn hidden" id="homeBtn" title="曲選択に戻る">🏠</button>
       <button class="help-btn" id="helpBtn">?</button>
     </div>
@@ -287,10 +272,6 @@
         <div class="help-step">
           <div class="help-step-title">3️⃣-🌍 全体を変える場合</div>
           <p>「遅く/速く」と%を決めて「全体に適用」をタップするだけ!</p>
-        </div>
-        <div class="help-step">
-          <div class="help-step-title">🎙️ 声で操作もできる!</div>
-          <p>マイクをタップして話しかけてください🗣️<br>例:「<b>12秒から18秒を15%遅く</b>」<br>例:「<b>全体を3%速く</b>」<br>例:「<b>1分20秒から1分30秒を10%ゆっくり</b>」</p>
         </div>
         <div class="help-step">
           <div class="help-step-title">4️⃣ 確認して保存 ▶️💾</div>
@@ -385,14 +366,6 @@
     </div>
 
     <div id="appliedList" class="applied-list"></div>
-
-    <div class="mic-card card">
-      <div class="mic-row">
-        <button class="mic-btn" id="micBtn">🎙️</button>
-        <div class="mic-status" id="micStatus">タップして話しかけてね</div>
-      </div>
-      <div class="mic-examples">例:「12秒から18秒を15%遅く」「全体を3%速く」</div>
-    </div>
 
     <div class="status-bar" id="statusBar"><div class="spinner"></div><span id="statusText">処理中...</span></div>
 
@@ -1577,7 +1550,6 @@ class PitchShifter {
   const appliedList = el('appliedList');
   const globalToggle = el('globalToggle'), globalPct = el('globalPct'), globalLabel = el('globalLabel');
   const applyGlobalBtn = el('applyGlobalBtn');
-  const micBtn = el('micBtn'), micStatus = el('micStatus');
   const statusBar = el('statusBar'), statusText = el('statusText');
   const playBtn = el('playBtn'), saveBtn = el('saveBtn'), resetBtn = el('resetBtn');
 
@@ -2370,183 +2342,6 @@ class PitchShifter {
     const end = encoder.flush();
     if (end.length > 0) parts.push(end);
     return new Blob(parts.map(p => new Uint8Array(p)), { type: 'audio/mp3' });
-  }
-
-
-  // ---------- 音声入力 ----------
-  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-  let recognizing = false;
-  if (SpeechRec) {
-    const rec = new SpeechRec();
-    rec.lang = 'ja-JP'; rec.interimResults = false; rec.maxAlternatives = 1;
-
-    const micCard = micBtn.closest('.mic-card');
-    function setMicUI(listening, statusText) {
-      recognizing = listening;
-      micBtn.classList.toggle('listening', listening);
-      if (micCard) micCard.classList.toggle('listening', listening);
-      micBtn.textContent = listening ? '⏹' : '🎙️';
-      if (statusText) micStatus.textContent = statusText;
-      micStatus.classList.toggle('on', listening);
-    }
-
-    // エラーコードを日本語メッセージに変換
-    function micErrorText(code) {
-      switch (code) {
-        case 'not-allowed':
-        case 'service-not-allowed':
-          return 'マイクの使用が許可されていません。ブラウザの設定でマイクを許可してください';
-        case 'no-speech':
-          return '音声が聞き取れませんでした。もう一度タップして話してください';
-        case 'audio-capture':
-          return 'マイクが見つかりませんでした。マイクの接続を確認してください';
-        case 'network':
-          return 'ネットワークエラーで音声認識できませんでした';
-        case 'aborted':
-          return '音声入力を中断しました';
-        default:
-          return '音声認識でエラーが発生しました。もう一度タップしてください';
-      }
-    }
-
-    rec.onstart = () => setMicUI(true, '🔴 聞き取り中...(もう一度タップで停止)');
-    rec.onend = () => {
-      // onendは成功・失敗どちらでも必ず呼ばれるので、ここで確実に待機状態へ戻す
-      const wasListening = recognizing;
-      setMicUI(false);
-      if (wasListening) micStatus.textContent = 'タップして話しかけてね';
-    };
-    rec.onerror = (e) => {
-      setMicUI(false, micErrorText(e.error));
-    };
-    rec.onresult = (e) => {
-      const text = e.results[0][0].transcript;
-      micStatus.textContent = `「${text}」`;
-      parseVoiceCommand(text);
-      // 結果を受け取ったら即座にマイクを解放する(iOSでマイクが点きっぱなしになるのを防ぐ)
-      try { rec.stop(); } catch(err) {}
-    };
-
-    // アプリから離れた時(タブ切替・ホームに戻る等)は必ずマイクを止める
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden && recognizing) {
-        try { rec.abort(); } catch(err) {}
-        setMicUI(false, 'タップして話しかけてね');
-      }
-    });
-    window.addEventListener('pagehide', () => {
-      if (recognizing) { try { rec.abort(); } catch(err) {} }
-    });
-
-    micBtn.addEventListener('click', () => {
-      if (!state.audioBuffer) { showToast('先に曲を読み込んでください'); return; }
-      if (recognizing) {
-        try { rec.stop(); } catch(e) {}
-        setMicUI(false, 'タップして話しかけてね');
-        return;
-      }
-      try {
-        rec.start();
-      } catch (e) {
-        // 内部状態のズレで開始に失敗した場合は一度リセットしてから再試行する
-        try { rec.abort(); } catch(e2) {}
-        setMicUI(false);
-        setTimeout(() => {
-          try { rec.start(); }
-          catch (e3) { setMicUI(false, '音声認識を開始できませんでした。もう一度タップしてください'); }
-        }, 150);
-      }
-    });
-  } else {
-    micBtn.disabled = true;
-    micStatus.textContent = 'このブラウザは音声入力に対応していません';
-  }
-
-  function toSeconds(min, sec) { return parseFloat(min)*60 + parseFloat(sec); }
-
-  function selectMode(mode) {
-    currentMode = mode;
-    [...modeToggle.children].forEach(b => b.classList.toggle('active', b.dataset.mode===mode));
-    regionSection.classList.toggle('hidden', mode !== 'region');
-    globalSection.classList.toggle('hidden', mode !== 'global');
-    tapHint.classList.toggle('hidden', mode !== 'region');
-    resetSelectionBtn.classList.toggle('hidden', mode !== 'region');
-    modePlaceholder.classList.add('hidden');
-    if (state.audioBuffer) drawWave(state.audioBuffer);
-  }
-
-  // 「1分20秒」「80秒」「80」→秒数に変換
-  function parseTimeToken(token) {
-    let m = token.match(/^(\d+(?:\.\d+)?)分(\d+(?:\.\d+)?)?秒?$/);
-    if (m) return parseFloat(m[1])*60 + (m[2] ? parseFloat(m[2]) : 0);
-    m = token.match(/^(\d+(?:\.\d+)?)秒?$/);
-    if (m) return parseFloat(m[1]);
-    return NaN;
-  }
-
-  function parseVoiceCommand(text) {
-    // 認識テキストを正規化: 空白除去、全角数字→半角、％/パーセント→%
-    let norm = text.replace(/\s/g,'')
-      .replace(/[０-９]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0))
-      .replace(/．/g, '.')
-      .replace(/％/g, '%')
-      .replace(/パーセント/g, '%');
-
-    // 方向: 「速く」「早く」→fast、「遅く」「ゆっくり」→slow
-    const hasFast = /[速早]|はやく/.test(norm);
-    const hasSlow = /遅|ゆっくり|おそく/.test(norm);
-    const dir = hasFast ? 'fast' : 'slow';
-    const pctMatch = norm.match(/(\d+(?:\.\d+)?)\s*%/);
-
-    if (!hasFast && !hasSlow) {
-      micStatus.textContent = `「${text}」→「速く」か「遅く」を含めて話してください`;
-      showToast('例:「12秒から18秒を15%遅く」「全体を3%速く」');
-      return;
-    }
-    if (!pctMatch) {
-      micStatus.textContent = `「${text}」→ 何%変えるか聞き取れませんでした`;
-      showToast('例:「12秒から18秒を15%遅く」のように%を含めて話してください');
-      return;
-    }
-    const pct = Math.round(parseFloat(pctMatch[1]));
-    if (pct < 1 || pct > 50) {
-      showToast('パーセントは1〜50の範囲で指定してください');
-      return;
-    }
-
-    // 全体変更: 「全体」「全部」を含む
-    if (/全体|全部/.test(norm)) {
-      globalPct.value = Math.min(30, pct);
-      [...globalToggle.children].forEach(b => b.classList.toggle('active', b.dataset.dir===dir));
-      globalDir = dir;
-      updateGlobalLabel();
-      selectMode('global');
-      setGlobalEdit(dir, Math.min(30, pct));
-      showToast(`✓ 全体を${Math.min(30, pct)}%${dir==='fast'?'速く':'遅く'}しました`);
-      return;
-    }
-
-    // 区間変更: 「AからB」の時間表現を柔軟に拾う
-    const rangeM = norm.match(/((?:\d+(?:\.\d+)?分)?\d+(?:\.\d+)?秒?)から((?:\d+(?:\.\d+)?分)?\d+(?:\.\d+)?秒?)/);
-    if (rangeM) {
-      const s = parseTimeToken(rangeM[1]);
-      const e = parseTimeToken(rangeM[2]);
-      if (!isNaN(s) && !isNaN(e) && e > s) {
-        if (state.audioBuffer && e > state.audioBuffer.duration + 1) {
-          showToast(`終了時間(${e.toFixed(0)}秒)が曲の長さを超えています`);
-          return;
-        }
-        startInput.value = s.toFixed(1);
-        endInput.value = e.toFixed(1);
-        selectMode('region');
-        drawWave(state.audioBuffer);
-        addRegionEdit(s, e, dir, pct);
-        showToast(`✓ ${fmtTime(s)}〜${fmtTime(e)} を ${pct}%${dir==='fast'?'速く':'遅く'}しました`);
-        return;
-      }
-    }
-    micStatus.textContent = `うまく解析できませんでした:「${text}」`;
-    showToast('例:「12秒から18秒を15%遅く」「1分20秒から1分30秒を10%速く」');
   }
 
 })();
