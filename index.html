@@ -204,17 +204,21 @@
     border: 1px solid #2a3050; background: #151827; color: #9096a8;
     font-size: 14px; flex-shrink: 0;
   }
+  .empty-extras {
+    margin: 20px auto 0; width: 100%; max-width: 300px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
   .mono-toggle-row {
-    display: flex; align-items: flex-start; gap: 8px;
-    margin-top: 18px; padding: 10px 14px; max-width: 280px;
+    display: flex; align-items: flex-start; gap: 8px; width: 100%;
+    padding: 12px 14px; box-sizing: border-box;
     background: #12131f; border: 1px solid #232840; border-radius: 12px;
     font-size: 11px; color: #9096a8; line-height: 1.6; text-align: left;
   }
   .mono-toggle-row input { margin-top: 2px; flex-shrink: 0; }
-  .share-row { margin-top: 14px; }
   .share-btn {
-    padding: 12px 22px; border-radius: 999px; border: 1px solid #2a3050;
-    background: #151827; color: #cfd2dd; font-size: 13px; font-weight: 700;
+    width: 100%; box-sizing: border-box; padding: 12px 14px; border-radius: 12px;
+    border: 1px solid #2a3050; background: #151827; color: #cfd2dd;
+    font-size: 13px; font-weight: 700;
   }
   .share-btn.copied { background: #22c55e; color: #06210f; border-color: transparent; }
   .export-choice {
@@ -250,7 +254,7 @@
   <div class="header">
     <div class="brand"><span class="logo">mDANCE</span><span class="badge">FREE</span></div>
     <div style="display:flex;align-items:center;gap:8px;">
-      <span class="subtitle">テンポチェンジャー <span style="opacity:0.5;">· v18</span></span>
+      <span class="subtitle">テンポチェンジャー <span style="opacity:0.5;">· v19</span></span>
       <button class="home-btn hidden" id="homeBtn" title="曲選択に戻る">🏠</button>
       <button class="help-btn" id="helpBtn">?</button>
     </div>
@@ -300,11 +304,12 @@
     <h2>曲を読み込もう！</h2>
     <p>MP3・WAV・M4A などOK<br>秒数を指定してテンポだけ変更できます</p>
     <label class="file-btn">📂 ファイルを選ぶ<input type="file" id="fileInput" accept="audio/*,.mp3,.wav,.m4a,.aac,.caf,.aiff,.flac"></label>
-    <label class="mono-toggle-row">
-      <input type="checkbox" id="monoModeToggle">
-      <span>🔋 省メモリモード(長い曲・古いスマホ向け。音はモノラルになります)</span>
-    </label>
-    <div class="share-row">
+
+    <div class="empty-extras">
+      <label class="mono-toggle-row">
+        <input type="checkbox" id="monoModeToggle">
+        <span>🔋 省メモリモード(長い曲・古いスマホ向け。音はモノラルになります)</span>
+      </label>
       <button class="share-btn" id="shareBtn">📤 このアプリを友達に共有</button>
     </div>
   </div>
@@ -1551,10 +1556,9 @@ class PitchShifter {
 
   // 共有ボタン: 対応環境ではネイティブ共有シート、非対応ならクリップボードコピーにフォールバック
   (function setupShareButton() {
-    const shareRow = document.querySelector('.share-row');
     const shareBtn = el('shareBtn');
     const url = location.href.split('#')[0].split('?')[0];
-    if (location.protocol === 'file:') { shareRow.classList.add('hidden'); return; }
+    if (location.protocol === 'file:') { shareBtn.classList.add('hidden'); return; }
 
     async function copyFallback() {
       try {
