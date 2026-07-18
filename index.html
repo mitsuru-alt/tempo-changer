@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>mDANCE テンポチェンジャー</title>
+<meta name="theme-color" content="#0b0e17">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="テンポチェンジャー">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   body {
@@ -254,7 +261,7 @@
   <div class="header">
     <div class="brand"><span class="logo">mDANCE</span><span class="badge">FREE</span></div>
     <div style="display:flex;align-items:center;gap:8px;">
-      <span class="subtitle">テンポチェンジャー <span style="opacity:0.5;">· v19</span></span>
+      <span class="subtitle">テンポチェンジャー <span style="opacity:0.5;">· v20</span></span>
       <button class="home-btn hidden" id="homeBtn" title="曲選択に戻る">🏠</button>
       <button class="help-btn" id="helpBtn">?</button>
     </div>
@@ -311,6 +318,30 @@
         <span>🔋 省メモリモード(長い曲・古いスマホ向け。音はモノラルになります)</span>
       </label>
       <button class="share-btn" id="shareBtn">📤 このアプリを友達に共有</button>
+      <button class="share-btn" id="a2hsBtn">📱 ホーム画面にアプリとして追加</button>
+    </div>
+  </div>
+
+  <div class="help-overlay" id="a2hsOverlay">
+    <div class="help-panel">
+      <div class="help-head">
+        <span>📱 ホーム画面に追加する方法</span>
+        <button class="help-close" id="a2hsCloseBtn">✕</button>
+      </div>
+      <div class="help-body">
+        <div class="help-step">
+          <div class="help-step-title">1️⃣ 共有ボタンをタップ</div>
+          <p>Safariの画面下(または上)にある <b>共有ボタン(四角から↑が出ているマーク)</b>をタップします</p>
+        </div>
+        <div class="help-step">
+          <div class="help-step-title">2️⃣「ホーム画面に追加」を選ぶ</div>
+          <p>出てきたメニューを下にスクロールして「<b>ホーム画面に追加</b>」をタップします</p>
+        </div>
+        <div class="help-step">
+          <div class="help-step-title">3️⃣ 右上の「追加」をタップ</div>
+          <p>これでホーム画面にアプリのアイコン🎵が追加されます!次からはアイコンをタップするだけで、アプリのように全画面で開けます✨</p>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1582,7 +1613,7 @@ class PitchShifter {
     shareBtn.addEventListener('click', async () => {
       if (navigator.share) {
         try {
-          await navigator.share({ title: 'mDANCE テンポチェンジャー', text: '曲のテンポを変えられる無料ツールです🎵', url });
+          await navigator.share({ url });
         } catch (err) {
           // ユーザーがキャンセルした場合(AbortError)は何もしない
           if (err && err.name !== 'AbortError') copyFallback();
@@ -1591,6 +1622,31 @@ class PitchShifter {
         copyFallback();
       }
     });
+  })();
+
+  // ホーム画面追加ボタン: Androidは直接プロンプト、iOSは手順ガイドを表示。追加済み(スタンドアロン起動)なら非表示
+  (function setupA2HS() {
+    const a2hsBtn = el('a2hsBtn');
+    const a2hsOverlay = el('a2hsOverlay');
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    if (isStandalone || location.protocol === 'file:') { a2hsBtn.classList.add('hidden'); return; }
+
+    let deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e; // Android Chrome等: 後でボタンから直接インストールを出せる
+    });
+
+    a2hsBtn.addEventListener('click', () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt = null;
+      } else {
+        a2hsOverlay.classList.add('show'); // iOS等: 手順ガイドを表示
+      }
+    });
+    el('a2hsCloseBtn').addEventListener('click', () => a2hsOverlay.classList.remove('show'));
+    a2hsOverlay.addEventListener('click', (e) => { if (e.target === a2hsOverlay) a2hsOverlay.classList.remove('show'); });
   })();
 
   const fileInput = el('fileInput');
