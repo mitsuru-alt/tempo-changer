@@ -2079,6 +2079,14 @@ class PitchShifter {
     }
     return false;
   }
+  // [a,b) の範囲が丸ごとカットの中に入っているか
+  function isCutSpan(a, b) {
+    for (let i=0;i<state.edits.length;i++) {
+      const ed = state.edits[i];
+      if (ed.type === 'cut' && a >= ed.start && b <= ed.end) return true;
+    }
+    return false;
+  }
   function hasCutEdit() {
     return state.edits.some(ed => ed.type === 'cut');
   }
@@ -2364,6 +2372,7 @@ class PitchShifter {
     if (!file) return;
     audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
     const arrayBuf = await file.arrayBuffer();
+    e.target.value = ''; // 同じ曲をもう一度選んでも読み込めるように(値が同じだとchangeが飛ばないブラウザがある)
     try {
       let buf = await audioCtx.decodeAudioData(arrayBuf);
       if (monoModeToggle.checked) {
@@ -2464,13 +2473,17 @@ class PitchShifter {
     resetArmed = false;
     resetBtn.textContent = '↺';
     if (typeof stopPlayback === 'function') stopPlayback();
+    if (typeof setCompare === 'function') setCompare(false);
     state.edits = [];
     state.globalEdit = null;
+    state.fades = [];                       // フェードも「全ての変更」に含める
+    state.tempoBuffer = state.audioBuffer;
     state.processedBuffer = state.audioBuffer;
     seekBar.max = Math.round(state.processedBuffer.duration * 1000);
     updateSeekUI(0);
     renderAppliedList();
     updatePlayExportState();
+    drawWave(state.audioBuffer);            // 消えていたカット部分を戻す
     showToast('全ての変更を取り消しました');
   });
 
@@ -2490,11 +2503,15 @@ class PitchShifter {
     const step = Math.max(1, Math.floor(data.length / barCount));
     ctx.clearRect(0,0,cssWidth,cssHeight);
     const barW = cssWidth / barCount;
+    const barDur = buffer.duration / barCount;
+    const showCutBars = compareOriginal; // 「変更前」を聴いている時はカット部分も薄く見せる
     for (let i=0;i<barCount;i++) {
       const sv = getTimeVal(startInput), ev = getTimeVal(endInput);
       const t = (i/barCount) * buffer.duration;
-      // カットした区間は波形そのものを描かない(消えたことが見て分かるように)
-      if (isCutTime(t)) continue;
+      // カットした区間は波形そのものを描かない(消えたことが見て分かるように)。
+      // 棒が丸ごとカット内のときだけ飛ばし、境目にまたがる棒は描いてから後で削る。
+      const cutBar = isCutSpan(t, t + barDur);
+      if (cutBar && !showCutBars) continue;
       let max = 0;
       const start = i*step;
       for (let j=0;j<step;j+=4) {
@@ -2503,7 +2520,7 @@ class PitchShifter {
       }
       const h = Math.max(3, max * (cssHeight - 8));
       const inSel = regionStepActive() && !isNaN(sv) && !isNaN(ev) && t >= Math.min(sv,ev) && t <= Math.max(sv,ev) && Math.abs(ev-sv) > 0.01;
-      ctx.fillStyle = inSel ? '#ff8ad1' : '#3a4160';
+      ctx.fillStyle = cutBar ? 'rgba(120,70,90,0.55)' : (inSel ? '#ff8ad1' : '#3a4160');
       ctx.fillRect(i*barW+0.5, (cssHeight-h)/2, Math.max(1, barW-1), h);
     }
     // フェード区間は色付きの帯で示す
@@ -2540,8 +2557,8 @@ class PitchShifter {
       if (ed.type !== 'cut') continue;
       const x1 = (ed.start/durAll)*cssWidth, x2 = (ed.end/durAll)*cssWidth;
       const w = Math.max(1.5, x2 - x1);
-      // はみ出して描かれた棒があっても、ここで確実に消す
-      ctx.clearRect(x1, 0, w, cssHeight);
+      // はみ出して描かれた棒があっても、ここで確実に消す(変更前を聴いている時は薄く残す)
+      if (!showCutBars) ctx.clearRect(x1, 0, w, cssHeight);
       // 端を点線で示す(どこを切ったかは分かるようにしておく)
       ctx.save();
       ctx.setLineDash([4, 4]);
@@ -2555,7 +2572,7 @@ class PitchShifter {
       ctx.restore();
       if (w > 44) {
         ctx.fillStyle = '#ff9fb1'; ctx.font = 'bold 11px sans-serif';
-        ctx.fillText('✂ カット', (x1+x2)/2 - 21, cssHeight - 6);
+        ctx.fillText(showCutBars ? '✂ カット予定' : '✂ カット', (x1+x2)/2 - (showCutBars ? 32 : 21), cssHeight - 6);
       }
     }
     timeLabels.innerHTML = '';
@@ -2628,6 +2645,14 @@ class PitchShifter {
     const clickX = Math.max(0, Math.min(rect.width, clientX - rect.left));
     const ratio = clickX / rect.width;
     const t = Math.max(0, Math.min(state.audioBuffer.duration, ratio * state.audioBuffer.duration));
+
+    // カット済みの部分はもう無いので選べない(「選択をやり直す」で戻せる)
+    if (isCutTime(t) && !compareOriginal) {
+      showToast(currentStep === 3
+        ? 'そこはカット済みです。戻したいときは「選択をやり直す」を押してください'
+        : 'そこはカット済みの部分なので選べません', 4000);
+      return;
+    }
 
     // 即座に光るフラッシュ(タップ位置がすぐ分かるように)
     const flash = document.createElement('div');
@@ -2796,6 +2821,7 @@ class PitchShifter {
   function addFade(dir) {
     const sp = fadeSpanOf();
     if (!sp) { showToast('フェードする区間を正しく指定してください'); return; }
+    if (isCutSpan(sp.s, sp.e)) { showToast('その区間はカット済みなのでフェードをかけられません', 4000); return; }
     if (typeof stopPlayback === 'function') stopPlayback();
     state.fades.push({ id: editIdCounter++, start: sp.s, end: sp.e, dir: dir });
     buildFinalBuffer();
@@ -3000,9 +3026,13 @@ class PitchShifter {
                                  state.globalEdit, buf.length, buf.sampleRate) / buf.sampleRate;
     if (rest < 0.5) { showToast('これを削除すると曲がほとんど残りません'); return; }
     state.edits.push({ id: editIdCounter++, type:'cut', start:s, end:e });
+    // 切った場所に開始/終了の印が残ると「消えてない?」と見えるので、選択は空にして次の選択へ
+    startInput.value = ''; endInput.value = '';
+    state.selecting = 'start';
+    updateTapHint();
     renderAppliedList();
     rebuildProcessedBuffer();
-    showToast('🗑 ' + fmtTime(s) + ' 〜 ' + fmtTime(e) + ' を削除しました');
+    showToast('🗑 ' + fmtTime(s) + ' 〜 ' + fmtTime(e) + ' をカットしました');
   });
 
   function addRegionEdit(s, e, dir, pct) {
@@ -3454,6 +3484,7 @@ class PitchShifter {
     const pos = frac * to.duration;
     updateSeekUI(pos);
     seekBar.value = Math.round(pos * 1000);
+    if (state.audioBuffer) drawWave(state.audioBuffer); // カット部分の見え方が変わる
     if (wasPlaying) playFromOffset(pos); // 再生中なら同じ場所から鳴らし続ける
   }
 
