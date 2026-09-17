@@ -156,6 +156,10 @@
     font-size: 11.5px; color: #6d738a; line-height: 1.5;
   }
   .pct-extend input { width: 20px; height: 20px; flex-shrink: 0; }
+  .fade-actions { display: flex; gap: 8px; }
+  .fade-actions .apply-btn { margin-top: 0; font-size: 13.5px; line-height: 1.4; min-height: 60px; }
+  .btn-fadein { background: linear-gradient(90deg, #2c6b41, #3f9c62) !important; color: #eafff1 !important; }
+  .btn-fadeout { background: linear-gradient(90deg, #7a4a12, #b3731f) !important; color: #fff3e2 !important; }
   .fade-row { margin-top: 14px; }
   .fade-row .fade-label {
     display: flex; justify-content: space-between; font-size: 13px;
@@ -388,7 +392,7 @@
   <div class="header">
     <div class="brand"><span class="logo">mDANCE</span><span class="badge">FREE</span></div>
     <div style="display:flex;align-items:center;gap:8px;">
-      <span class="subtitle">テンポチェンジャー <span style="opacity:0.5;">· v38</span></span>
+      <span class="subtitle">テンポチェンジャー <span style="opacity:0.5;">· v39</span></span>
       <button class="home-btn hidden" id="homeBtn" title="曲選択に戻る">🏠</button>
       <button class="help-btn" id="helpBtn">?</button>
     </div>
@@ -427,7 +431,10 @@
         </div>
         <div class="help-step">
           <div class="help-step-title">4️⃣ フェードをつけますか? 🔈</div>
-          <p>曲の頭を<b>だんだん大きく</b>、終わりを<b>だんだん小さく</b>できます（0〜10秒）。舞台の出はけに合わせたい時に🎭</p>
+          <p>区間の決め方は2️⃣3️⃣と同じです。区間を決めてから、どちらかを押してください。<br>
+          <b>🔈 フェードイン</b>…選んだ区間より<b>前は無音</b>になり、区間の中でだんだん大きくなります。曲の頭に使うと自然に始まります<br>
+          <b>🔉 フェードアウト</b>…区間の中でだんだん小さくなり、<b>後ろは無音</b>になります。曲の終わりに使うと自然に終わります🎭<br>
+          波形に<b>色の帯</b>で出ます（緑=イン / オレンジ=アウト）。<b>何か所でもつけられます</b></p>
         </div>
         <div class="help-step">
           <div class="help-step-title">5️⃣ できあがり ▶️💾</div>
@@ -617,16 +624,13 @@
     <div class="step-card hidden" id="step4">
       <div class="step-q"><span class="n">STEP 4</span>🔈 フェードを<br>つけますか？</div>
       <div class="card">
-        <div class="fade-row">
-          <div class="fade-label"><span>🔈 フェードイン(だんだん大きく)</span><span id="fadeInVal">0.0秒</span></div>
-          <input type="range" id="fadeInSlider" min="0" max="100" value="0">
-        </div>
-        <div class="fade-row">
-          <div class="fade-label"><span>🔉 フェードアウト(だんだん小さく)</span><span id="fadeOutVal">0.0秒</span></div>
-          <input type="range" id="fadeOutSlider" min="0" max="100" value="0">
-        </div>
+        <div class="step-slot" data-slot="4"></div>
         <div class="len-preview" id="fadePreview"></div>
-        <button class="apply-btn" id="applyFadeBtn">このフェードで適用</button>
+        <div class="fade-actions">
+          <button class="apply-btn btn-fadein" id="fadeInBtn">🔈 この区間で<br>フェードイン</button>
+          <button class="apply-btn btn-fadeout" id="fadeOutBtn">🔉 この区間で<br>フェードアウト</button>
+        </div>
+        <div class="step-tip">💡 <b>フェードイン</b>…選んだ区間より<b>前は無音</b>になり、区間の中でだんだん大きくなります（そこから曲が始まる感じ）<br>💡 <b>フェードアウト</b>…区間の中でだんだん小さくなり、<b>後ろは無音</b>になります</div>
       </div>
       <div class="step-nav">
         <button class="nav-back" data-goto="3">◀ 戻る</button>
@@ -2012,7 +2016,7 @@ class PitchShifter {
       el('step' + s).classList.toggle('hidden', s !== currentStep);
     }
     // 区間を使う場面（STEP2で「区間だけ」を選んでいる時、またはSTEP3のカット）
-    const usesRegion = (currentStep === 2 && scopeMode === 'region') || currentStep === 3;
+    const usesRegion = (currentStep === 2 && scopeMode === 'region') || currentStep === 3 || currentStep === 4;
     mountRegionPicker(usesRegion ? currentStep : null);
     tapHint.classList.toggle('hidden', !usesRegion);
     resetSelectionBtn.classList.toggle('hidden', !usesRegion);
@@ -2055,14 +2059,13 @@ class PitchShifter {
     saveSetting({ scopeMode: scopeMode });
   });
 
-  state.fadeIn = 0;
-  state.fadeOut = 0;
+  state.fades = [];        // [{id, start, end, dir:'in'|'out'}] 元の曲の時刻
   state.tempoBuffer = null; // テンポ変更だけ済んだ音(カット/フェード前)
   let regionDir = 'slow';
   let globalDir = 'slow';
   // 区間を選べるのは「STEP2で区間だけを選んでいる時」と「STEP3のカット」
   function regionStepActive() {
-    return (currentStep === 2 && scopeMode === 'region') || currentStep === 3;
+    return (currentStep === 2 && scopeMode === 'region') || currentStep === 3 || currentStep === 4;
   }
 
   function fmtTime(sec) {
@@ -2126,21 +2129,41 @@ class PitchShifter {
 
   // ---------- フェード ----------
   // テンポ変更・カットの結果(tempoBuffer)の端を薄くするだけ。やり直しは一瞬で終わる。
+  // 指定した区間ごとのフェードを、音量カーブとしてまとめて作る
+  // フェードイン: 区間より前は無音 → 区間で 0→1 → 以降そのまま
+  // フェードアウト: 区間まではそのまま → 区間で 1→0 → 以降は無音
+  function buildGainCurve(len, sr) {
+    var gain = new Float32Array(len);
+    gain.fill(1);
+    for (var i=0;i<state.fades.length;i++) {
+      var f = state.fades[i];
+      var a = Math.round(originalToTempo(f.start) * sr);
+      var b = Math.round(originalToTempo(f.end) * sr);
+      a = Math.max(0, Math.min(len, a));
+      b = Math.max(a + 1, Math.min(len, b));
+      var span = b - a;
+      if (f.dir === 'in') {
+        for (var p=0;p<a;p++) gain[p] = 0;
+        for (var q=0;q<span;q++) gain[a+q] *= q / span;
+      } else {
+        for (var r=0;r<span;r++) gain[a+r] *= 1 - (r / span);
+        for (var s=b;s<len;s++) gain[s] = 0;
+      }
+    }
+    return gain;
+  }
+
   function buildFinalBuffer() {
     var tempo = state.tempoBuffer;
     if (!tempo) { state.processedBuffer = null; return; }
-    if (!(state.fadeIn > 0) && !(state.fadeOut > 0)) { state.processedBuffer = tempo; return; }
+    if (!state.fades || state.fades.length === 0) { state.processedBuffer = tempo; return; }
     var sr = tempo.sampleRate, len = tempo.length;
+    var gain = buildGainCurve(len, sr);
     var out = audioCtx.createBuffer(tempo.numberOfChannels, len, sr);
-    var fi = Math.min(Math.round(state.fadeIn * sr), len);
-    var fo = Math.min(Math.round(state.fadeOut * sr), len);
     for (var c=0;c<tempo.numberOfChannels;c++) {
       var src = tempo.getChannelData(c);
       var dst = new Float32Array(len);
-      dst.set(src);
-      // 素直な直線フェード(聴感の音量変化が読みやすい)
-      for (var j=0;j<fi;j++) dst[j] *= j / fi;
-      for (var k=0;k<fo;k++) dst[len-1-k] *= k / fo;
+      for (var i2=0;i2<len;i2++) dst[i2] = src[i2] * gain[i2];
       out.copyToChannel(dst, c);
     }
     state.processedBuffer = out;
@@ -2264,7 +2287,7 @@ class PitchShifter {
     if (state.globalEdit) {
       parts.push('全体' + state.globalEdit.pct + '%' + (state.globalEdit.dir === 'slow' ? '遅く' : '速く'));
     }
-    if (state.fadeIn > 0 || state.fadeOut > 0) parts.push('フェード');
+    if (state.fades.length > 0) parts.push('フェード');
     var cuts = 0;
     for (var ci=0; ci<state.edits.length; ci++) if (state.edits[ci].type === 'cut') cuts++;
     if (cuts > 0) parts.push(cuts + 'か所削除');
@@ -2327,7 +2350,7 @@ class PitchShifter {
       state.audioBuffer = buf;
       state.tempoBuffer = buf;
       state.processedBuffer = buf;
-      state.fadeIn = 0; state.fadeOut = 0;
+      state.fades = [];
       state.sourceName = baseFileName(file.name, '曲'); // 書き出し名のベースに使う
       if (typeof refreshExportName === 'function') refreshExportName(true); // 前の曲の名前を持ち越さない
       state.edits = [];
@@ -2388,7 +2411,7 @@ class PitchShifter {
     state.audioBuffer = null;
     state.processedBuffer = null;
     state.tempoBuffer = null;
-    state.fadeIn = 0; state.fadeOut = 0;
+    state.fades = [];
     state.edits = [];
     state.globalEdit = null;
     goStep(FIRST_STEP);
@@ -2456,6 +2479,22 @@ class PitchShifter {
       ctx.fillStyle = inSel ? '#ff8ad1' : '#3a4160';
       ctx.fillRect(i*barW+0.5, (cssHeight-h)/2, Math.max(1, barW-1), h);
     }
+    // フェード区間は色付きの帯で示す
+    for (let fi=0; fi<state.fades.length; fi++) {
+      const f = state.fades[fi];
+      const dur0 = buffer.duration;
+      const x1 = (f.start/dur0)*cssWidth, x2 = (f.end/dur0)*cssWidth;
+      const g = ctx.createLinearGradient(x1, 0, x2, 0);
+      if (f.dir === 'in') { g.addColorStop(0,'rgba(63,156,98,0.55)'); g.addColorStop(1,'rgba(63,156,98,0.05)'); }
+      else { g.addColorStop(0,'rgba(179,115,31,0.05)'); g.addColorStop(1,'rgba(179,115,31,0.55)'); }
+      ctx.fillStyle = g;
+      ctx.fillRect(x1, 0, Math.max(1.5, x2-x1), cssHeight);
+      if (x2 - x1 > 30) {
+        ctx.fillStyle = f.dir === 'in' ? '#b6f0cb' : '#ffd9ae';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.fillText(f.dir === 'in' ? '🔈' : '🔉', (x1+x2)/2 - 7, 14);
+      }
+    }
     // 削除した区間は赤い帯で示す
     const durAll = buffer.duration;
     for (let ci=0; ci<state.edits.length; ci++) {
@@ -2511,6 +2550,7 @@ class PitchShifter {
     if (state.audioBuffer) drawWave(state.audioBuffer);
     updateRegionPreview();
     updateCutPreview();
+    updateFadePreview();
     showToast('選択をクリアしました。波形をタップして開始位置から選び直してください');
   });
 
@@ -2543,6 +2583,7 @@ class PitchShifter {
     drawWave(state.audioBuffer);
     updateRegionPreview();
     updateCutPreview();
+    updateFadePreview();
   }
 
   onSafeTap(waveCanvas, (e) => handleWaveTap(e.clientX));
@@ -2567,8 +2608,8 @@ class PitchShifter {
   if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', scheduleWaveRedraw);
   }
-  startInput.addEventListener('change', () => { normalizeTimeInput(startInput); if (state.audioBuffer) drawWave(state.audioBuffer); updateRegionPreview(); updateCutPreview(); });
-  endInput.addEventListener('change', () => { normalizeTimeInput(endInput); if (state.audioBuffer) drawWave(state.audioBuffer); updateRegionPreview(); updateCutPreview(); });
+  startInput.addEventListener('change', () => { normalizeTimeInput(startInput); if (state.audioBuffer) drawWave(state.audioBuffer); updateRegionPreview(); updateCutPreview(); updateFadePreview(); });
+  endInput.addEventListener('change', () => { normalizeTimeInput(endInput); if (state.audioBuffer) drawWave(state.audioBuffer); updateRegionPreview(); updateCutPreview(); updateFadePreview(); });
 
   // ---------- トグル/スライダー ----------
   regionToggle.addEventListener('click', (e) => {
@@ -2660,62 +2701,61 @@ class PitchShifter {
     btn.addEventListener('click', function (e) { e.preventDefault(); });
   });
 
-  // ---------- フェード(STEP 5) ----------
-  const fadeInSlider = el('fadeInSlider'), fadeOutSlider = el('fadeOutSlider');
-  const fadeInVal = el('fadeInVal'), fadeOutVal = el('fadeOutVal');
-  function fadeSecOf(slider) { return parseInt(slider.value, 10) / 10; }
-  function updateFadeLabels() {
-    fadeInVal.textContent = fadeSecOf(fadeInSlider).toFixed(1) + '秒';
-    fadeOutVal.textContent = fadeSecOf(fadeOutSlider).toFixed(1) + '秒';
+  // ---------- フェード(STEP 4) ----------
+  // 区間を選んで、その区間でフェードイン / フェードアウトする。
+  function fadeSpanOf() {
+    const buf = state.audioBuffer;
+    if (!buf) return null;
+    const s = getTimeVal(startInput);
+    let e = getTimeVal(endInput);
+    if (isNaN(s) || isNaN(e) || e <= s) return null;
+    e = Math.min(e, buf.duration);
+    if (e - s < 0.05) return null;
+    return { s, e };
   }
-  [fadeInSlider, fadeOutSlider].forEach(s => s.addEventListener('input', () => {
-    updateFadeLabels(); updateFadePreview();
-  }));
 
   function updateFadePreview() {
     const box = el('fadePreview');
     if (!box || !state.audioBuffer) return;
     const total = finalLengthFor(state.edits, state.globalEdit);
-    const fi = fadeSecOf(fadeInSlider), fo = fadeSecOf(fadeOutSlider);
+    const sp = fadeSpanOf();
     let html = '<div class="row"><span class="k">曲の長さ</span><span class="v">' + fmtTime(total) + '</span></div>';
-    if (fi === 0 && fo === 0) {
-      html += '<div class="warn" style="color:#6d738a;">フェードなし（つけない場合は「使わない・次へ」でOKです）</div>';
+    if (!sp) {
+      html += '<div class="warn">フェードしたい区間の開始と終了を決めてください</div>';
     } else {
-      const parts = [];
-      if (fi > 0) parts.push('最初の ' + fi.toFixed(1) + '秒 でだんだん大きく');
-      if (fo > 0) parts.push('最後の ' + fo.toFixed(1) + '秒 でだんだん小さく');
-      html += '<div class="warn" style="color:#9096a8;">' + parts.join('<br>') + '</div>';
-      if (fi + fo > total) html += '<div class="warn">フェードが曲の長さを超えています。短くしてください</div>';
+      html += '<div class="row"><span class="k">フェードする長さ</span><span class="v">' + fmtTime(sp.e - sp.s) + '</span></div>';
+      html += '<div class="warn" style="color:#9096a8;">' + fmtTime(sp.s) + ' 〜 ' + fmtTime(sp.e) + ' でフェードします</div>';
     }
     box.innerHTML = html;
   }
 
-  onSafeTap(el('applyFadeBtn'), () => {
-    if (!state.audioBuffer) return;
-    const fi = fadeSecOf(fadeInSlider), fo = fadeSecOf(fadeOutSlider);
-    const total = finalLengthFor(state.edits, state.globalEdit);
-    if (fi + fo > total) { showToast('フェードが曲の長さを超えています。短くしてください'); return; }
+  function addFade(dir) {
+    const sp = fadeSpanOf();
+    if (!sp) { showToast('フェードする区間を正しく指定してください'); return; }
     if (typeof stopPlayback === 'function') stopPlayback();
-    state.fadeIn = fi; state.fadeOut = fo;
+    state.fades.push({ id: editIdCounter++, start: sp.s, end: sp.e, dir: dir });
     buildFinalBuffer();
     seekBar.max = Math.round(state.processedBuffer.duration * 1000);
     updateSeekUI(0);
     updatePlayExportState();
+    drawWave(state.audioBuffer);
     renderAppliedList();
+    updateFadePreview();
     if (typeof refreshExportName === 'function') refreshExportName();
-    showToast(fi === 0 && fo === 0 ? 'フェードを解除しました' : '✓ フェードを適用しました');
-  });
+    showToast('✓ ' + fmtTime(sp.s) + '〜' + fmtTime(sp.e) + ' を' + (dir === 'in' ? 'フェードイン' : 'フェードアウト') + 'しました');
+  }
+  onSafeTap(el('fadeInBtn'), () => addFade('in'));
+  onSafeTap(el('fadeOutBtn'), () => addFade('out'));
 
-  function clearFade() {
+  function removeFade(id) {
     if (typeof stopPlayback === 'function') stopPlayback();
-    state.fadeIn = 0; state.fadeOut = 0;
-    fadeInSlider.value = 0; fadeOutSlider.value = 0;
-    updateFadeLabels();
+    state.fades = state.fades.filter(f => f.id !== id);
     if (state.audioBuffer) {
       buildFinalBuffer();
       seekBar.max = Math.round(state.processedBuffer.duration * 1000);
       updateSeekUI(0);
       updatePlayExportState();
+      drawWave(state.audioBuffer);
     }
     renderAppliedList();
     updateFadePreview();
@@ -2723,8 +2763,6 @@ class PitchShifter {
   }
 
   function resetStepUI() {
-    fadeInSlider.value = 0; fadeOutSlider.value = 0;
-    updateFadeLabels();
     startInput.value = ''; endInput.value = '';
   }
 
@@ -2760,8 +2798,8 @@ class PitchShifter {
     const cutEdits = state.edits.filter(e => e.type === 'cut');
     speedEdits.forEach(e => lines.push('⏩ ' + fmtTime(e.start) + '〜' + fmtTime(e.end) + ' を ' + e.pct + '%' + (e.dir==='slow'?'遅く':'速く')));
     cutEdits.forEach(e => lines.push('✂️ ' + fmtTime(e.start) + '〜' + fmtTime(e.end) + ' をカット'));
-    if (state.fadeIn > 0) lines.push('🔈 フェードイン ' + state.fadeIn.toFixed(1) + '秒');
-    if (state.fadeOut > 0) lines.push('🔉 フェードアウト ' + state.fadeOut.toFixed(1) + '秒');
+    state.fades.forEach(f => lines.push((f.dir==='in'?'🔈':'🔉') + ' ' + fmtTime(f.start) + '〜' + fmtTime(f.end) +
+      ' で' + (f.dir==='in'?'フェードイン':'フェードアウト')));
     box.innerHTML =
       '<div class="big">' + fmtTime(state.audioBuffer.duration) + ' → ' + fmtTime(total) + '</div>' +
       (lines.length ? lines.map(l => '<div>' + l + '</div>').join('')
@@ -2925,20 +2963,19 @@ class PitchShifter {
       appliedList.appendChild(note);
       return;
     }
-    // フェードの状態を1行で表示(✕で解除できる)
-    if (state.fadeIn > 0 || state.fadeOut > 0) {
-      const parts = [];
-      if (state.fadeIn > 0) parts.push('フェードイン' + state.fadeIn.toFixed(1) + '秒');
-      if (state.fadeOut > 0) parts.push('フェードアウト' + state.fadeOut.toFixed(1) + '秒');
+    // フェードを1つずつ表示(✕で解除できる)
+    state.fades.forEach(f => {
       const chip = document.createElement('div');
       chip.className = 'chip';
-      chip.innerHTML = '<span class="txt">🔈 <b>' + parts.join(' ／ ') + '</b></span>';
+      chip.innerHTML = '<span class="txt">' + (f.dir === 'in' ? '🔈' : '🔉') + ' ' +
+        fmtTime(f.start) + ' – ' + fmtTime(f.end) + ' で <b>' +
+        (f.dir === 'in' ? 'フェードイン' : 'フェードアウト') + '</b></span>';
       const x = document.createElement('button');
       x.className = 'x'; x.textContent = '✕';
-      x.addEventListener('click', () => { clearFade(); });
+      x.addEventListener('click', () => removeFade(f.id));
       chip.appendChild(x);
       appliedList.appendChild(chip);
-    }
+    });
     state.edits.forEach(ed => {
       const chip = document.createElement('div');
       chip.className = 'chip';
@@ -3325,8 +3362,7 @@ class PitchShifter {
 
   // 編集が1つでもあるときだけ、聴き比べボタンを出す
   function hasAnyEdit() {
-    return state.edits.length > 0 || !!state.globalEdit ||
-           state.fadeIn > 0 || state.fadeOut > 0;
+    return state.edits.length > 0 || !!state.globalEdit || state.fades.length > 0;
   }
   function updateCompareVisibility() {
     const hasEdits = hasAnyEdit();
