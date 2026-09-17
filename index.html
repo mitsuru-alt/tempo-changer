@@ -176,6 +176,18 @@
     font-size: 11.5px; font-weight: 800; letter-spacing: 0.04em;
     padding: 4px 11px; border-radius: 999px; margin-right: 9px; vertical-align: 3px;
   }
+  .scope-toggle { display: flex; gap: 8px; margin: 0 18px 10px; }
+  .scope-toggle button {
+    flex: 1; min-height: 60px; padding: 9px 8px; border-radius: 13px;
+    border: 1px solid #2a3050; background: #0e1120; color: #8b91a8;
+    font-size: 12px; font-weight: 700; line-height: 1.45;
+  }
+  .scope-toggle button b { display: block; font-size: 14.5px; margin-bottom: 2px; }
+  .scope-toggle button small { font-size: 10.5px; opacity: 0.75; font-weight: 700; }
+  .scope-toggle button.active {
+    background: linear-gradient(90deg, #ff6ec7, #a78bfa); color: #12081a; border-color: transparent;
+  }
+  .scope-toggle button.active small { opacity: 0.68; }
   .step-nav { display: flex; gap: 8px; margin: 10px 18px 0; }
   .step-nav button {
     min-height: 52px; padding: 12px 10px; border-radius: 13px;
@@ -376,7 +388,7 @@
   <div class="header">
     <div class="brand"><span class="logo">mDANCE</span><span class="badge">FREE</span></div>
     <div style="display:flex;align-items:center;gap:8px;">
-      <span class="subtitle">テンポチェンジャー <span style="opacity:0.5;">· v37</span></span>
+      <span class="subtitle">テンポチェンジャー <span style="opacity:0.5;">· v38</span></span>
       <button class="home-btn hidden" id="homeBtn" title="曲選択に戻る">🏠</button>
       <button class="help-btn" id="helpBtn">?</button>
     </div>
@@ -398,29 +410,27 @@
           <p>「曲のファイルを選ぶ」から、スマホの中の曲を選んでください。MP3・WAV・M4AなどOK🎵</p>
         </div>
         <div class="help-step">
-          <div class="help-step-title">2️⃣ 曲全体のスピードを変えますか? 🌍</div>
-          <p>曲まるごとのテンポを変えます。<b>3% / 5% / 8% / 10% / 15%</b> のボタンを押すだけ。デッキのピッチと同じ感覚です🎚️<br>変更後の長さ（3:00 → 3:09 など）がその場で出ます</p>
+          <div class="help-step-title">2️⃣ スピードを変えますか? ⏩</div>
+          <p>まず <b>🌍 曲全体</b> か <b>✂️ 区間だけ</b> を選びます。<br>
+          <b>🌍 曲全体</b>…曲まるごとのテンポを変えます。<b>3% / 5% / 8% / 10% / 15%</b> のボタンを押すだけ。デッキのピッチと同じ感覚です🎚️<br>
+          <b>✂️ 区間だけ</b>…曲の一部だけ変えます。区間の決め方は👇<br>
+          　👆 波形をタップ（1回目=開始、2回目=終了）でだいたいの位置<br>
+          　🎧 <b>「▶ 再生確認」で聴きながら</b>「⏱ 再生バーの位置で開始に」を押すのが一番正確<br>
+          　🔧 <b>−0.1 / +0.1</b> で細かく追い込む（押しっぱなしで連続）<br>
+          どちらも<b>何回でも重ねられます</b>。全体を5%遅く＋サビだけさらに10%遅く、といった使い方もOK🎯</p>
         </div>
         <div class="help-step">
-          <div class="help-step-title">3️⃣ 区間だけスピードを調整しますか? ⏩</div>
-          <p>曲の一部だけテンポを変えます。まず<b>区間の決め方</b>👇<br>
-          👆 波形をタップ（1回目=開始、2回目=終了）でだいたいの位置<br>
-          🎧 <b>「▶ 再生確認」で聴きながら</b>「⏱ 再生バーの位置で開始に」を押すのが一番正確<br>
-          🔧 <b>−0.1 / +0.1</b> で細かく追い込む（押しっぱなしで連続）<br>
-          そのあと「遅く/速く」と%を決めて「この区間に適用」。<b>何か所でも重ねられます</b>🎯</p>
-        </div>
-        <div class="help-step">
-          <div class="help-step-title">4️⃣ 区間だけカットしますか? ✂️</div>
-          <p>いらない部分をまるごと消して、前後を繋げます。区間の決め方は3️⃣と同じです。<br>
+          <div class="help-step-title">3️⃣ 区間だけカットしますか? ✂️</div>
+          <p>いらない部分をまるごと消して、前後を繋げます。区間の決め方は2️⃣と同じです。<br>
           <b>イントロを切る</b>なら 0:00.0 〜 好きな位置、<b>後奏を切る</b>なら 好きな位置 〜 曲の最後。<br>
           カットした場所は波形に<b>赤い帯</b>で出ます。繋ぎ目は自動でなめらかになります✨</p>
         </div>
         <div class="help-step">
-          <div class="help-step-title">5️⃣ フェードをつけますか? 🔈</div>
+          <div class="help-step-title">4️⃣ フェードをつけますか? 🔈</div>
           <p>曲の頭を<b>だんだん大きく</b>、終わりを<b>だんだん小さく</b>できます（0〜10秒）。舞台の出はけに合わせたい時に🎭</p>
         </div>
         <div class="help-step">
-          <div class="help-step-title">6️⃣ できあがり ▶️💾</div>
+          <div class="help-step-title">5️⃣ できあがり ▶️💾</div>
           <p>変更のまとめと、元の曲からどれだけ長さが変わったかが出ます。<br>
           「▶ 再生確認」で聴いて、よければ「💾 書き出し」から <b>WAV(高音質)</b> か <b>MP3(軽量・約1/10)</b> を選んで保存📥<br>
           ファイル名は編集内容から自動でつきますが、その場で変更もできます✏️</p>
@@ -541,8 +551,13 @@
     </div>
 
     <div class="step-card hidden" id="step2">
-      <div class="step-q"><span class="n">STEP 2</span>🌍 曲全体のスピードを<br>変えますか？</div>
-      <div class="card">
+      <div class="step-q"><span class="n">STEP 2</span>⏩ スピードを<br>変えますか？</div>
+      <div class="scope-toggle" id="scopeToggle">
+        <button data-scope="global" class="active"><b>🌍 曲全体</b><small>まるごと変える</small></button>
+        <button data-scope="region"><b>✂️ 区間だけ</b><small>一部だけ変える</small></button>
+      </div>
+
+      <div class="card" id="scopeGlobal">
         <div class="global-toggle" id="globalToggle">
           <button class="active slow" data-dir="slow">遅く</button>
           <button data-dir="fast">速く</button>
@@ -556,18 +571,11 @@
         <label class="pct-extend"><input type="checkbox" data-extend="global">
           <span>16%より大きく変えたい(最大50%まで)</span></label>
         <div class="len-preview" id="globalPreview"></div>
-        <button class="apply-btn" id="applyGlobalBtn">この設定で適用</button>
+        <button class="apply-btn" id="applyGlobalBtn">曲全体に適用</button>
       </div>
-      <div class="step-nav">
-        <button class="nav-home" id="navHome2">◀ 曲を選び直す</button>
-        <button class="nav-next" data-goto="3">使わない・次へ ▶</button>
-      </div>
-    </div>
 
-    <div class="step-card hidden" id="step3">
-      <div class="step-q"><span class="n">STEP 3</span>⏩ 区間だけスピードを<br>調整しますか？</div>
-      <div class="card">
-        <div class="step-slot" data-slot="3"></div>
+      <div class="card hidden" id="scopeRegion">
+        <div class="step-slot" data-slot="2"></div>
         <div class="pct-row">
           <div class="pct-toggle" id="regionToggle">
             <button class="active slow" data-dir="slow">遅く</button>
@@ -585,6 +593,21 @@
         <div class="len-preview" id="regionPreview"></div>
         <button class="apply-btn" id="applyRegionBtn">この区間に適用</button>
       </div>
+
+      <div class="step-nav">
+        <button class="nav-home" id="navHome2">◀ 曲を選び直す</button>
+        <button class="nav-next" data-goto="3">使わない・次へ ▶</button>
+      </div>
+    </div>
+
+    <div class="step-card hidden" id="step3">
+      <div class="step-q"><span class="n">STEP 3</span>✂️ 区間だけ<br>カットしますか？</div>
+      <div class="card">
+        <div class="step-slot" data-slot="3"></div>
+        <div class="len-preview" id="cutPreview"></div>
+        <button class="apply-btn btn-cut" id="cutRegionBtn">🗑 この区間をカット</button>
+        <div class="step-tip">💡 イントロを切るなら <b>0:00.0 〜 好きな位置</b>、後奏を切るなら <b>好きな位置 〜 曲の最後</b> を指定してください</div>
+      </div>
       <div class="step-nav">
         <button class="nav-back" data-goto="2">◀ 戻る</button>
         <button class="nav-next" data-goto="4">使わない・次へ ▶</button>
@@ -592,21 +615,7 @@
     </div>
 
     <div class="step-card hidden" id="step4">
-      <div class="step-q"><span class="n">STEP 4</span>✂️ 区間だけ<br>カットしますか？</div>
-      <div class="card">
-        <div class="step-slot" data-slot="4"></div>
-        <div class="len-preview" id="cutPreview"></div>
-        <button class="apply-btn btn-cut" id="cutRegionBtn">🗑 この区間をカット</button>
-        <div class="step-tip">💡 イントロを切るなら <b>0:00.0 〜 好きな位置</b>、後奏を切るなら <b>好きな位置 〜 曲の最後</b> を指定してください</div>
-      </div>
-      <div class="step-nav">
-        <button class="nav-back" data-goto="3">◀ 戻る</button>
-        <button class="nav-next" data-goto="5">使わない・次へ ▶</button>
-      </div>
-    </div>
-
-    <div class="step-card hidden" id="step5">
-      <div class="step-q"><span class="n">STEP 5</span>🔈 フェードを<br>つけますか？</div>
+      <div class="step-q"><span class="n">STEP 4</span>🔈 フェードを<br>つけますか？</div>
       <div class="card">
         <div class="fade-row">
           <div class="fade-label"><span>🔈 フェードイン(だんだん大きく)</span><span id="fadeInVal">0.0秒</span></div>
@@ -620,19 +629,19 @@
         <button class="apply-btn" id="applyFadeBtn">このフェードで適用</button>
       </div>
       <div class="step-nav">
-        <button class="nav-back" data-goto="4">◀ 戻る</button>
-        <button class="nav-next" data-goto="6">使わない・次へ ▶</button>
+        <button class="nav-back" data-goto="3">◀ 戻る</button>
+        <button class="nav-next" data-goto="5">使わない・次へ ▶</button>
       </div>
     </div>
 
-    <div class="step-card hidden" id="step6">
-      <div class="step-q"><span class="n">STEP 6</span>🎉 できあがり！</div>
+    <div class="step-card hidden" id="step5">
+      <div class="step-q"><span class="n">STEP 5</span>🎉 できあがり！</div>
       <div class="card">
         <div class="done-summary" id="doneSummary"></div>
         <div class="step-tip">下の <b>▶ 再生確認</b> で聴いて、よければ <b>💾 書き出し</b> で保存してください。<br>直したいところは「◀ 戻る」で前のステップに戻れます</div>
       </div>
       <div class="step-nav">
-        <button class="nav-back" data-goto="5">◀ 戻る</button>
+        <button class="nav-back" data-goto="4">◀ 戻る</button>
         <button class="nav-next" data-goto="2">最初のステップへ ▶</button>
       </div>
     </div>
@@ -1987,7 +1996,7 @@ class PitchShifter {
   const tapHint = el('tapHint');
   const stepBar = el('stepBar');
   const regionPicker = el('regionPicker');
-  const FIRST_STEP = 2, LAST_STEP = 6;
+  const FIRST_STEP = 2, LAST_STEP = 5;
   let currentStep = FIRST_STEP;
 
   // 区間を選ぶ操作盤は1つだけ作って、いま表示しているステップに move する
@@ -2002,8 +2011,8 @@ class PitchShifter {
     for (let s = FIRST_STEP; s <= LAST_STEP; s++) {
       el('step' + s).classList.toggle('hidden', s !== currentStep);
     }
-    // 区間を使うステップ(3と4)だけ、操作盤と波形タップを有効にする
-    const usesRegion = (currentStep === 3 || currentStep === 4);
+    // 区間を使う場面（STEP2で「区間だけ」を選んでいる時、またはSTEP3のカット）
+    const usesRegion = (currentStep === 2 && scopeMode === 'region') || currentStep === 3;
     mountRegionPicker(usesRegion ? currentStep : null);
     tapHint.classList.toggle('hidden', !usesRegion);
     resetSelectionBtn.classList.toggle('hidden', !usesRegion);
@@ -2015,11 +2024,10 @@ class PitchShifter {
       else if (s === currentStep) i.className = 'now';
       stepBar.appendChild(i);
     }
-    if (currentStep === 6) renderDoneSummary();
-    if (currentStep === 5) updateFadePreview();
-    if (currentStep === 4) updateCutPreview();
-    if (currentStep === 3) updateRegionPreview();
-    if (currentStep === 2) updateGlobalPreview();
+    if (currentStep === 5) renderDoneSummary();
+    if (currentStep === 4) updateFadePreview();
+    if (currentStep === 3) updateCutPreview();
+    if (currentStep === 2) { updateGlobalPreview(); updateRegionPreview(); }
     if (state.audioBuffer) drawWave(state.audioBuffer);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -2030,13 +2038,32 @@ class PitchShifter {
     goStep(parseInt(btn.dataset.goto, 10));
   });
 
+  // STEP2: 曲全体 / 区間だけ の切り替え
+  let scopeMode = 'global';
+  const scopeToggle = el('scopeToggle');
+  function applyScope() {
+    [...scopeToggle.children].forEach(b => b.classList.toggle('active', b.dataset.scope === scopeMode));
+    el('scopeGlobal').classList.toggle('hidden', scopeMode !== 'global');
+    el('scopeRegion').classList.toggle('hidden', scopeMode !== 'region');
+    if (currentStep === 2) goStep(2); // 操作盤の出し入れと波形の描き直し
+  }
+  scopeToggle.addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if (!btn || inGesture() || btn.dataset.scope === scopeMode) return;
+    scopeMode = btn.dataset.scope;
+    applyScope();
+    saveSetting({ scopeMode: scopeMode });
+  });
+
   state.fadeIn = 0;
   state.fadeOut = 0;
   state.tempoBuffer = null; // テンポ変更だけ済んだ音(カット/フェード前)
   let regionDir = 'slow';
   let globalDir = 'slow';
-  // 区間を選べるのは STEP3 と STEP4 のときだけ
-  function regionStepActive() { return currentStep === 3 || currentStep === 4; }
+  // 区間を選べるのは「STEP2で区間だけを選んでいる時」と「STEP3のカット」
+  function regionStepActive() {
+    return (currentStep === 2 && scopeMode === 'region') || currentStep === 3;
+  }
 
   function fmtTime(sec) {
     const m = Math.floor(sec/60), s = (sec%60).toFixed(1).padStart(4,'0');
@@ -2759,6 +2786,8 @@ class PitchShifter {
   function applySavedSettings() {
     const s = loadSettings();
     if (s.monoMode === true) monoModeToggle.checked = true;
+    if (s.scopeMode === 'region' || s.scopeMode === 'global') scopeMode = s.scopeMode;
+    applyScope();
     ['region','global'].forEach(function (which) {
       const chk = document.querySelector('[data-extend="' + which + '"]');
       const slider = (which === 'region') ? regionPct : globalPct;
