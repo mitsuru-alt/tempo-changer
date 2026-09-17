@@ -392,7 +392,7 @@
   <div class="header">
     <div class="brand"><span class="logo">mDANCE</span><span class="badge">FREE</span></div>
     <div style="display:flex;align-items:center;gap:8px;">
-      <span class="subtitle">テンポチェンジャー <span style="opacity:0.5;">· v41</span></span>
+      <span class="subtitle">テンポチェンジャー <span style="opacity:0.5;">· v42</span></span>
       <button class="home-btn hidden" id="homeBtn" title="曲選択に戻る">🏠</button>
       <button class="help-btn" id="helpBtn">?</button>
     </div>
@@ -2022,6 +2022,7 @@ class PitchShifter {
     mountRegionPicker(usesRegion ? currentStep : null);
     tapHint.classList.toggle('hidden', !usesRegion);
     resetSelectionBtn.classList.toggle('hidden', !usesRegion);
+    updateResetBtnLabel();
     // 進み具合のバー
     stepBar.innerHTML = '';
     for (let s = FIRST_STEP; s <= LAST_STEP; s++) {
@@ -2068,6 +2069,18 @@ class PitchShifter {
   // 区間を選べるのは「STEP2で区間だけを選んでいる時」と「STEP3のカット」
   function regionStepActive() {
     return (currentStep === 2 && scopeMode === 'region') || currentStep === 3 || currentStep === 4;
+  }
+
+  // その時刻はカットされて無くなっているか(波形を描かないための判定)
+  function isCutTime(t) {
+    for (let i=0;i<state.edits.length;i++) {
+      const ed = state.edits[i];
+      if (ed.type === 'cut' && t >= ed.start && t < ed.end) return true;
+    }
+    return false;
+  }
+  function hasCutEdit() {
+    return state.edits.some(ed => ed.type === 'cut');
   }
 
   function fmtTime(sec) {
@@ -2271,7 +2284,7 @@ class PitchShifter {
     box.innerHTML = lenRow('曲全体', nowTotal, afterTotal);
   }
 
-  function updatePreviews() { updateRegionPreview(); updateGlobalPreview(); updateCutPreview(); updateFadePreview(); }
+  function updatePreviews() { updateRegionPreview(); updateGlobalPreview(); updateCutPreview(); updateFadePreview(); updateResetBtnLabel(); }
 
   // ---------- 書き出しファイル名 ----------
   // 拡張子を落として、元の曲名だけ取り出す
@@ -2478,6 +2491,10 @@ class PitchShifter {
     ctx.clearRect(0,0,cssWidth,cssHeight);
     const barW = cssWidth / barCount;
     for (let i=0;i<barCount;i++) {
+      const sv = getTimeVal(startInput), ev = getTimeVal(endInput);
+      const t = (i/barCount) * buffer.duration;
+      // カットした区間は波形そのものを描かない(消えたことが見て分かるように)
+      if (isCutTime(t)) continue;
       let max = 0;
       const start = i*step;
       for (let j=0;j<step;j+=4) {
@@ -2485,8 +2502,6 @@ class PitchShifter {
         if (v > max) max = v;
       }
       const h = Math.max(3, max * (cssHeight - 8));
-      const sv = getTimeVal(startInput), ev = getTimeVal(endInput);
-      const t = (i/barCount) * buffer.duration;
       const inSel = regionStepActive() && !isNaN(sv) && !isNaN(ev) && t >= Math.min(sv,ev) && t <= Math.max(sv,ev) && Math.abs(ev-sv) > 0.01;
       ctx.fillStyle = inSel ? '#ff8ad1' : '#3a4160';
       ctx.fillRect(i*barW+0.5, (cssHeight-h)/2, Math.max(1, barW-1), h);
@@ -2518,20 +2533,29 @@ class PitchShifter {
         ctx.fillText(f.dir === 'in' ? '🔈' : '🔉', (x1+x2)/2 - 7, 14);
       }
     }
-    // 削除した区間は赤い帯で示す
+    // カットした区間は「空っぽの穴」として描く(波形は上のループで描いていない)
     const durAll = buffer.duration;
     for (let ci=0; ci<state.edits.length; ci++) {
       const ed = state.edits[ci];
       if (ed.type !== 'cut') continue;
       const x1 = (ed.start/durAll)*cssWidth, x2 = (ed.end/durAll)*cssWidth;
-      ctx.fillStyle = 'rgba(180,30,60,0.42)';
-      ctx.fillRect(x1, 0, Math.max(1.5, x2-x1), cssHeight);
-      ctx.strokeStyle = '#ff5c7a'; ctx.lineWidth = 1.5;
+      const w = Math.max(1.5, x2 - x1);
+      // はみ出して描かれた棒があっても、ここで確実に消す
+      ctx.clearRect(x1, 0, w, cssHeight);
+      // 端を点線で示す(どこを切ったかは分かるようにしておく)
+      ctx.save();
+      ctx.setLineDash([4, 4]);
+      ctx.strokeStyle = 'rgba(255,92,122,0.75)'; ctx.lineWidth = 1.5;
       ctx.beginPath(); ctx.moveTo(x1,0); ctx.lineTo(x1,cssHeight);
       ctx.moveTo(x2,0); ctx.lineTo(x2,cssHeight); ctx.stroke();
-      if (x2 - x1 > 34) {
-        ctx.fillStyle = '#ffc2ce'; ctx.font = 'bold 11px sans-serif';
-        ctx.fillText('削除', (x1+x2)/2 - 13, cssHeight - 6);
+      // 中央に細い線 = 音が無くなったところ
+      ctx.setLineDash([3, 5]);
+      ctx.strokeStyle = 'rgba(255,92,122,0.45)'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(x1, cssHeight/2); ctx.lineTo(x2, cssHeight/2); ctx.stroke();
+      ctx.restore();
+      if (w > 44) {
+        ctx.fillStyle = '#ff9fb1'; ctx.font = 'bold 11px sans-serif';
+        ctx.fillText('✂ カット', (x1+x2)/2 - 21, cssHeight - 6);
       }
     }
     timeLabels.innerHTML = '';
@@ -2565,7 +2589,21 @@ class PitchShifter {
   function updateTapHint() {
     tapHintTarget.textContent = state.selecting === 'start' ? '開始位置' : '終了位置';
   }
+  // カットのステップでは、やり直すとカットも元通りになる(波形が戻る)ことを
+  // ボタンの文字にも出しておく。押してから気づく、を無くすため。
+  function updateResetBtnLabel() {
+    const undoCut = (currentStep === 3 && hasCutEdit());
+    resetSelectionBtn.textContent = undoCut ? '↩︎ 選択をやり直す（カットも元に戻す）' : '選択をやり直す';
+    resetSelectionBtn.style.color = undoCut ? '#ffc2ce' : '#9096a8';
+  }
   resetSelectionBtn.addEventListener('click', () => {
+    // STEP3(カット)でだけ、カットも取り消して波形を元に戻す
+    const undoCut = (currentStep === 3 && hasCutEdit());
+    if (undoCut) {
+      state.edits = state.edits.filter(ed => ed.type !== 'cut');
+      renderAppliedList();
+      rebuildProcessedBuffer();
+    }
     startInput.value = '';
     endInput.value = '';
     state.selecting = 'start';
@@ -2574,7 +2612,10 @@ class PitchShifter {
     updateRegionPreview();
     updateCutPreview();
     updateFadePreview();
-    showToast('選択をクリアしました。波形をタップして開始位置から選び直してください');
+    updateResetBtnLabel();
+    showToast(undoCut
+      ? '↩︎ カットを元に戻しました。波形をタップして選び直してください'
+      : '選択をクリアしました。波形をタップして開始位置から選び直してください');
   });
 
   // 波形のタップ処理。clickイベントはピンチズーム/スクロールの直後にiOSが
