@@ -97,10 +97,6 @@
     display: flex; justify-content: space-between; font-size: 10.5px;
     color: #9096a8; margin-top: 2px; font-variant-numeric: tabular-nums;
   }
-  .mode-placeholder {
-    margin: 0 18px 16px; font-size: 14px; color: #9096a8; text-align: center;
-    padding: 14px; border: 1px dashed #232840; border-radius: 12px;
-  }
   .tap-flash {
     position: absolute; top: 0; bottom: 0; width: 3px;
     background: #fff; opacity: 0.9; pointer-events: none;
@@ -160,25 +156,42 @@
     font-size: 11.5px; color: #6d738a; line-height: 1.5;
   }
   .pct-extend input { width: 20px; height: 20px; flex-shrink: 0; }
-  .trim-head {
-    display: flex; align-items: center; justify-content: space-between; gap: 10px;
-    margin: 20px 18px 10px; padding: 14px 16px; min-height: 56px; box-sizing: border-box;
-    background: #151827; border: 1px solid #232840; border-radius: 14px;
-    font-size: 15.5px; font-weight: 800; color: #f0f1f6;
-  }
-  .trim-head .chev { color: #6d738a; font-size: 13px; font-weight: 700; flex-shrink: 0; }
-  .trim-head.on { background: #1d2340; border-color: #3a4270; }
   .fade-row { margin-top: 14px; }
   .fade-row .fade-label {
     display: flex; justify-content: space-between; font-size: 13px;
     font-weight: 700; color: #cfd2dd; margin-bottom: 2px;
   }
   .fade-row .fade-label span:last-child { color: #ff8ad1; font-variant-numeric: tabular-nums; }
-  .region-actions { display: flex; gap: 8px; }
-  .region-actions .apply-btn { margin-top: 0; }
   .btn-cut { background: #4a1220 !important; color: #ffb3c4 !important; flex: 0.75; }
-  .trim-actions { display: flex; gap: 8px; margin-top: 4px; }
-  .trim-actions .apply-btn { margin-top: 0; }
+  .step-bar { display: flex; gap: 5px; margin: 18px 18px 12px; }
+  .step-bar > i { flex: 1; height: 5px; border-radius: 999px; background: #232840; }
+  .step-bar > i.done { background: #3730a6; }
+  .step-bar > i.now { background: linear-gradient(90deg, #ff6ec7, #a78bfa); }
+  .step-q {
+    margin: 0 18px 10px; font-size: 19px; font-weight: 800; color: #f0f1f6;
+    line-height: 1.5; letter-spacing: 0.01em;
+  }
+  .step-q .n {
+    display: inline-block; background: #232840; color: #ffb3e2;
+    font-size: 11.5px; font-weight: 800; letter-spacing: 0.04em;
+    padding: 4px 11px; border-radius: 999px; margin-right: 9px; vertical-align: 3px;
+  }
+  .step-nav { display: flex; gap: 8px; margin: 10px 18px 0; }
+  .step-nav button {
+    min-height: 52px; padding: 12px 10px; border-radius: 13px;
+    font-size: 14px; font-weight: 800; border: 1px solid #2a3050;
+  }
+  .step-nav .nav-back, .step-nav .nav-home { flex: 0.8; background: #151827; color: #9096a8; }
+  .step-nav .nav-next { flex: 1.3; background: #1d2340; color: #cfd2dd; border-color: #3a4270; }
+  .step-nav .nav-next.done { background: #14361f; color: #9ce8b4; border-color: #2c6b41; }
+  .step-tip {
+    margin-top: 12px; font-size: 12px; color: #9096a8; line-height: 1.7;
+    background: #12131f; border: 1px solid #232840; border-radius: 10px; padding: 10px 12px;
+  }
+  .step-tip b { color: #cfd2dd; }
+  .done-summary { font-size: 13.5px; color: #cfd2dd; line-height: 2; }
+  .done-summary .big { font-size: 17px; font-weight: 800; color: #fff; }
+  .done-summary .none { color: #6d738a; font-size: 12.5px; }
   .len-preview {
     margin-top: 12px; padding: 11px 13px; border-radius: 12px;
     background: #12131f; border: 1px solid #232840;
@@ -218,14 +231,6 @@
   .global-toggle button.active[data-dir="slow"] { background: #3730a6; color: #d6d3ff; }
   .global-toggle button.active[data-dir="fast"] { background: #b34700; color: #ffd9b0; }
 
-  .mode-toggle { display: flex; gap: 8px; margin: 0 18px 4px; }
-  .mode-toggle button {
-    flex: 1; padding: 12px 0; border-radius: 12px; border: 1px solid #232840;
-    background: #151827; color: #9096a8; font-size: 13px; font-weight: 700;
-  }
-  .mode-toggle button.active {
-    background: linear-gradient(90deg, #ff6ec7, #a78bfa); color: #12081a; border-color: transparent;
-  }
 
   .status-bar { margin: 0 18px 16px; font-size: 12.5px; color: #7de3a8; display: none; align-items: center; gap: 8px; }
   .status-bar.show { display: flex; }
@@ -355,7 +360,6 @@
     .card { padding: 10px 14px; margin: 10px 18px; }
     canvas#wave { height: 130px; }
     .section-label { margin: 10px 18px 6px; }
-    .mode-placeholder { margin: 0 18px 10px; padding: 10px; }
     .copyright-note { margin: 0 18px 84px; }
     .footer-bar { padding: 8px 18px calc(8px + env(safe-area-inset-bottom)); }
     .applied-list { margin: 0 18px 10px; }
@@ -372,7 +376,7 @@
   <div class="header">
     <div class="brand"><span class="logo">mDANCE</span><span class="badge">FREE</span></div>
     <div style="display:flex;align-items:center;gap:8px;">
-      <span class="subtitle">テンポチェンジャー <span style="opacity:0.5;">· v36</span></span>
+      <span class="subtitle">テンポチェンジャー <span style="opacity:0.5;">· v37</span></span>
       <button class="home-btn hidden" id="homeBtn" title="曲選択に戻る">🏠</button>
       <button class="help-btn" id="helpBtn">?</button>
     </div>
@@ -386,29 +390,44 @@
       </div>
       <div class="help-body">
         <div class="help-step">
+          <div class="help-step-title">📖 STEP を順番に進むだけ</div>
+          <p>質問が1つずつ出てきます。<b>使わないときは「使わない・次へ ▶」</b>を押して進んでください。やり直したいときは「◀ 戻る」でいつでも戻れます🔙</p>
+        </div>
+        <div class="help-step">
           <div class="help-step-title">1️⃣ 曲を読み込む 📂</div>
-          <p>「ファイルを選ぶ」からスマホに保存した曲(MP3・WAV・M4Aなど)を選びます。曲はスマホの中だけで処理されるので安心です🔒</p>
+          <p>「曲のファイルを選ぶ」から、スマホの中の曲を選んでください。MP3・WAV・M4AなどOK🎵</p>
         </div>
         <div class="help-step">
-          <div class="help-step-title">2️⃣ 変更する場所を選ぶ 🎛️</div>
-          <p>✂️ <b>区間を指定して変更</b> → 曲の一部分だけ速さを変えたいとき<br>🌍 <b>曲全体を変更</b> → 曲まるごと速さを変えたいとき</p>
+          <div class="help-step-title">2️⃣ 曲全体のスピードを変えますか? 🌍</div>
+          <p>曲まるごとのテンポを変えます。<b>3% / 5% / 8% / 10% / 15%</b> のボタンを押すだけ。デッキのピッチと同じ感覚です🎚️<br>変更後の長さ（3:00 → 3:09 など）がその場で出ます</p>
         </div>
         <div class="help-step">
-          <div class="help-step-title">3️⃣-✂️ 区間だけ変える場合</div>
-          <p>👆 まず波形をタップしてだいたいの位置を決めます(1回目=開始、2回目=終了)。<br>🎧 <b>もっと正確に決めたい時</b>は「▶ 再生確認」で聴きながら、ちょうどの瞬間に<b>「⏱ ここを開始に」</b>を押してください。<br>🔧 <b>−0.1 / +0.1</b> ボタンで細かく追い込めます(押しっぱなしで連続)。時間の直接入力もOK✏️<br>そのあと「遅く/速く」と%を決めて「この区間に適用」をタップ!🎯<br>
-          🗑 <b>その区間をまるごと消したい時</b>は「この区間を削除」をタップ。削除した場所は波形に<b>赤い帯</b>で出ます。前後は自動でなめらかに繋がります✨</p>
+          <div class="help-step-title">3️⃣ 区間だけスピードを調整しますか? ⏩</div>
+          <p>曲の一部だけテンポを変えます。まず<b>区間の決め方</b>👇<br>
+          👆 波形をタップ（1回目=開始、2回目=終了）でだいたいの位置<br>
+          🎧 <b>「▶ 再生確認」で聴きながら</b>「⏱ 再生バーの位置で開始に」を押すのが一番正確<br>
+          🔧 <b>−0.1 / +0.1</b> で細かく追い込む（押しっぱなしで連続）<br>
+          そのあと「遅く/速く」と%を決めて「この区間に適用」。<b>何か所でも重ねられます</b>🎯</p>
         </div>
         <div class="help-step">
-          <div class="help-step-title">3️⃣-🌍 全体を変える場合</div>
-          <p>「遅く/速く」と%を決めて「全体に適用」をタップするだけ!</p>
+          <div class="help-step-title">4️⃣ 区間だけカットしますか? ✂️</div>
+          <p>いらない部分をまるごと消して、前後を繋げます。区間の決め方は3️⃣と同じです。<br>
+          <b>イントロを切る</b>なら 0:00.0 〜 好きな位置、<b>後奏を切る</b>なら 好きな位置 〜 曲の最後。<br>
+          カットした場所は波形に<b>赤い帯</b>で出ます。繋ぎ目は自動でなめらかになります✨</p>
         </div>
         <div class="help-step">
-          <div class="help-step-title">4️⃣ 前後をカット・フェード ✄（任意）</div>
-          <p>「✄ 前後をカット・フェード」をタップすると開きます。<b>イントロを切る・後奏を切る</b>のに使ってください✂️<br>位置の決め方は区間と同じで、<b>再生しながら「⏱ ここから始める」</b>が確実です。<br>フェードは0〜10秒で、<b>だんだん大きく/小さく</b>なります。舞台の出はけに合わせたい時に🎭<br>カットした部分は波形が暗くなるので、どこを使うか一目で分かります</p>
+          <div class="help-step-title">5️⃣ フェードをつけますか? 🔈</div>
+          <p>曲の頭を<b>だんだん大きく</b>、終わりを<b>だんだん小さく</b>できます（0〜10秒）。舞台の出はけに合わせたい時に🎭</p>
         </div>
         <div class="help-step">
-          <div class="help-step-title">5️⃣ 確認して保存 ▶️💾</div>
-          <p>「▶ 再生確認」で聴いてみて、良ければ「💾 書き出し」から <b>WAV(高音質)</b>か<b>MP3(軽量・約1/10)</b>を選んで保存📥<br>白いバーをドラッグすると、<b>ドラッグ中もその場所の音が鳴る</b>ので、耳で頭出しできます🎧 離すとそこから続けて再生されます</p>
+          <div class="help-step-title">6️⃣ できあがり ▶️💾</div>
+          <p>変更のまとめと、元の曲からどれだけ長さが変わったかが出ます。<br>
+          「▶ 再生確認」で聴いて、よければ「💾 書き出し」から <b>WAV(高音質)</b> か <b>MP3(軽量・約1/10)</b> を選んで保存📥<br>
+          ファイル名は編集内容から自動でつきますが、その場で変更もできます✏️</p>
+        </div>
+        <div class="help-step">
+          <div class="help-step-title">🔄 変更前と聴き比べ</div>
+          <p>1つでも変更すると、波形の下に「🔄 変更前の音と聴き比べる」が出ます。<b>再生中に押しても止まりません</b>。やりすぎたかどうかの判断が一瞬でつきます🎧</p>
         </div>
         <div class="help-step">
           <div class="help-step-title">✈️ 電波がなくても使えます</div>
@@ -416,11 +435,7 @@
         </div>
         <div class="help-step">
           <div class="help-step-title">⚙️ 設定は覚えています</div>
-          <p>「遅く/速く」「%」「省メモリモード」などは<b>次に開いた時もそのまま</b>です⚙️ いつも8%遅くで使うなら、毎回選び直す必要はありません<br>※ 曲ごとの内容(区間・カット位置)は覚えないので、新しい曲は毎回まっさらから始まります</p>
-        </div>
-        <div class="help-step">
-          <div class="help-step-title">💡 便利ワザ</div>
-          <p>・変更はリストの✕でいつでも取り消せます<br>・左下の↺は<b>2回タップ</b>で全部リセット<br>・右上の🏠で曲選択画面に戻れます<br>・長い曲で重い/落ちる時は曲選択画面の「🔋省メモリモード」を試してください(音はモノラルになります)<br>・音程(キー)は変わらず、速さだけが変わります🎼</p>
+          <p>「遅く/速く」「%」「省メモリモード」などは<b>次に開いた時もそのまま</b>です⚙️ いつも8%遅くで使うなら、毎回選び直す必要はありません<br>※ 曲ごとの内容(区間やカット位置)は覚えないので、新しい曲は毎回まっさらから始まります</p>
         </div>
         <div class="help-step help-caution">
           <div class="help-step-title">⚠️ 大事なお願い</div>
@@ -497,39 +512,62 @@
       <button class="apply-btn hidden" id="resetSelectionBtn" style="margin-top:8px;background:#232840;color:#9096a8;">選択をやり直す</button>
     </div>
 
-    <div class="section-label">🎛️ STEP 2 · どちらを変更しますか?</div>
-    <div class="mode-toggle" id="modeToggle">
-      <button data-mode="region">✂️ 区間を指定して変更</button>
-      <button data-mode="global">🌍 曲全体を変更</button>
-    </div>
-    <div class="mode-placeholder" id="modePlaceholder">👆 上の2つから、どちらか一方をタップして選んでください</div>
+    <div class="step-bar" id="stepBar"></div>
 
-    <div id="regionSection" class="hidden">
-      <div class="section-label">✂️ STEP 3 · 区間だけ変更</div>
+    <div id="regionPicker" class="hidden">
+      <div class="time-inputs">
+        <div class="time-box">
+          <div class="lbl">開始</div>
+          <input type="text" id="startInput" inputmode="text" autocomplete="off" placeholder="0:00.0">
+          <div class="nudge-row">
+            <button data-nudge="start" data-d="-0.1">−0.1</button>
+            <button data-nudge="start" data-d="0.1">+0.1</button>
+          </div>
+        </div>
+        <span class="arrow">→</span>
+        <div class="time-box">
+          <div class="lbl">終了</div>
+          <input type="text" id="endInput" inputmode="text" autocomplete="off" placeholder="0:00.0">
+          <div class="nudge-row">
+            <button data-nudge="end" data-d="-0.1">−0.1</button>
+            <button data-nudge="end" data-d="0.1">+0.1</button>
+          </div>
+        </div>
+      </div>
+      <div class="cue-row">
+        <button data-cue="start"><b>⏱ 再生バーの位置で開始に</b><small>聴きながら押す</small></button>
+        <button data-cue="end"><b>⏱ 再生バーの位置で終了に</b><small>聴きながら押す</small></button>
+      </div>
+    </div>
+
+    <div class="step-card hidden" id="step2">
+      <div class="step-q"><span class="n">STEP 2</span>🌍 曲全体のスピードを<br>変えますか？</div>
       <div class="card">
-        <div class="time-inputs">
-          <div class="time-box">
-            <div class="lbl">開始</div>
-            <input type="text" id="startInput" inputmode="text" autocomplete="off" placeholder="0:00.0">
-            <div class="nudge-row">
-              <button data-nudge="start" data-d="-0.1">−0.1</button>
-              <button data-nudge="start" data-d="0.1">+0.1</button>
-            </div>
-          </div>
-          <span class="arrow">→</span>
-          <div class="time-box">
-            <div class="lbl">終了</div>
-            <input type="text" id="endInput" inputmode="text" autocomplete="off" placeholder="0:00.0">
-            <div class="nudge-row">
-              <button data-nudge="end" data-d="-0.1">−0.1</button>
-              <button data-nudge="end" data-d="0.1">+0.1</button>
-            </div>
-          </div>
+        <div class="global-toggle" id="globalToggle">
+          <button class="active slow" data-dir="slow">遅く</button>
+          <button data-dir="fast">速く</button>
         </div>
-        <div class="cue-row">
-          <button data-cue="start"><b>⏱ ここを開始に</b><small>再生しながら押す</small></button>
-          <button data-cue="end"><b>⏱ ここを終了に</b><small>再生しながら押す</small></button>
+        <div class="global-row"><span class="name" id="globalLabel">全体を 5% 遅くする</span></div>
+        <input type="range" id="globalPct" min="1" max="16" value="5">
+        <div class="pct-presets" data-presets="global">
+          <button data-v="3">3%</button><button data-v="5">5%</button>
+          <button data-v="8">8%</button><button data-v="10">10%</button><button data-v="15">15%</button>
         </div>
+        <label class="pct-extend"><input type="checkbox" data-extend="global">
+          <span>16%より大きく変えたい(最大50%まで)</span></label>
+        <div class="len-preview" id="globalPreview"></div>
+        <button class="apply-btn" id="applyGlobalBtn">この設定で適用</button>
+      </div>
+      <div class="step-nav">
+        <button class="nav-home" id="navHome2">◀ 曲を選び直す</button>
+        <button class="nav-next" data-goto="3">使わない・次へ ▶</button>
+      </div>
+    </div>
+
+    <div class="step-card hidden" id="step3">
+      <div class="step-q"><span class="n">STEP 3</span>⏩ 区間だけスピードを<br>調整しますか？</div>
+      <div class="card">
+        <div class="step-slot" data-slot="3"></div>
         <div class="pct-row">
           <div class="pct-toggle" id="regionToggle">
             <button class="active slow" data-dir="slow">遅く</button>
@@ -545,64 +583,31 @@
         <label class="pct-extend"><input type="checkbox" data-extend="region">
           <span>16%より大きく変えたい(最大50%まで)</span></label>
         <div class="len-preview" id="regionPreview"></div>
-        <div class="region-actions">
-          <button class="apply-btn" id="applyRegionBtn">この区間に適用</button>
-          <button class="apply-btn btn-cut" id="cutRegionBtn">🗑 この区間を削除</button>
-        </div>
+        <button class="apply-btn" id="applyRegionBtn">この区間に適用</button>
+      </div>
+      <div class="step-nav">
+        <button class="nav-back" data-goto="2">◀ 戻る</button>
+        <button class="nav-next" data-goto="4">使わない・次へ ▶</button>
       </div>
     </div>
 
-    <div id="globalSection" class="hidden">
-      <div class="section-label">🌍 STEP 3 · 曲全体を変更</div>
+    <div class="step-card hidden" id="step4">
+      <div class="step-q"><span class="n">STEP 4</span>✂️ 区間だけ<br>カットしますか？</div>
       <div class="card">
-        <div class="global-toggle" id="globalToggle">
-          <button class="active slow" data-dir="slow">遅く</button>
-          <button data-dir="fast">速く</button>
-        </div>
-        <div class="global-row">
-          <span class="name" id="globalLabel">全体を 3% 遅くする</span>
-        </div>
-        <input type="range" id="globalPct" min="1" max="16" value="5">
-        <div class="pct-presets" data-presets="global">
-          <button data-v="3">3%</button><button data-v="5">5%</button>
-          <button data-v="8">8%</button><button data-v="10">10%</button><button data-v="15">15%</button>
-        </div>
-        <label class="pct-extend"><input type="checkbox" data-extend="global">
-          <span>16%より大きく変えたい(最大50%まで)</span></label>
-        <div class="len-preview" id="globalPreview"></div>
-        <button class="apply-btn" id="applyGlobalBtn">全体に適用</button>
+        <div class="step-slot" data-slot="4"></div>
+        <div class="len-preview" id="cutPreview"></div>
+        <button class="apply-btn btn-cut" id="cutRegionBtn">🗑 この区間をカット</button>
+        <div class="step-tip">💡 イントロを切るなら <b>0:00.0 〜 好きな位置</b>、後奏を切るなら <b>好きな位置 〜 曲の最後</b> を指定してください</div>
+      </div>
+      <div class="step-nav">
+        <button class="nav-back" data-goto="3">◀ 戻る</button>
+        <button class="nav-next" data-goto="5">使わない・次へ ▶</button>
       </div>
     </div>
 
-    <div class="trim-head" id="trimHead">
-      <span>✄ 前後をカット・フェード<span style="font-weight:700;font-size:12px;color:#6d738a;">（任意）</span></span>
-      <span class="chev" id="trimChev">開く ▼</span>
-    </div>
-    <div id="trimSection" class="hidden">
+    <div class="step-card hidden" id="step5">
+      <div class="step-q"><span class="n">STEP 5</span>🔈 フェードを<br>つけますか？</div>
       <div class="card">
-        <div class="time-inputs">
-          <div class="time-box">
-            <div class="lbl">ここから</div>
-            <input type="text" id="trimStartInput" inputmode="text" autocomplete="off" placeholder="0:00.0">
-            <div class="nudge-row">
-              <button data-nudge="trimStart" data-d="-0.1">−0.1</button>
-              <button data-nudge="trimStart" data-d="0.1">+0.1</button>
-            </div>
-          </div>
-          <span class="arrow">→</span>
-          <div class="time-box">
-            <div class="lbl">ここまで</div>
-            <input type="text" id="trimEndInput" inputmode="text" autocomplete="off" placeholder="曲の最後">
-            <div class="nudge-row">
-              <button data-nudge="trimEnd" data-d="-0.1">−0.1</button>
-              <button data-nudge="trimEnd" data-d="0.1">+0.1</button>
-            </div>
-          </div>
-        </div>
-        <div class="cue-row">
-          <button data-cue="trimStart"><b>⏱ ここから始める</b><small>再生しながら押す</small></button>
-          <button data-cue="trimEnd"><b>⏱ ここで終える</b><small>再生しながら押す</small></button>
-        </div>
         <div class="fade-row">
           <div class="fade-label"><span>🔈 フェードイン(だんだん大きく)</span><span id="fadeInVal">0.0秒</span></div>
           <input type="range" id="fadeInSlider" min="0" max="100" value="0">
@@ -611,11 +616,24 @@
           <div class="fade-label"><span>🔉 フェードアウト(だんだん小さく)</span><span id="fadeOutVal">0.0秒</span></div>
           <input type="range" id="fadeOutSlider" min="0" max="100" value="0">
         </div>
-        <div class="len-preview" id="trimPreview"></div>
-        <div class="trim-actions">
-          <button class="apply-btn" id="applyTrimBtn">この設定を適用</button>
-          <button class="apply-btn" id="clearTrimBtn" style="flex:0.5;background:#232840;color:#9096a8;">解除</button>
-        </div>
+        <div class="len-preview" id="fadePreview"></div>
+        <button class="apply-btn" id="applyFadeBtn">このフェードで適用</button>
+      </div>
+      <div class="step-nav">
+        <button class="nav-back" data-goto="4">◀ 戻る</button>
+        <button class="nav-next" data-goto="6">使わない・次へ ▶</button>
+      </div>
+    </div>
+
+    <div class="step-card hidden" id="step6">
+      <div class="step-q"><span class="n">STEP 6</span>🎉 できあがり！</div>
+      <div class="card">
+        <div class="done-summary" id="doneSummary"></div>
+        <div class="step-tip">下の <b>▶ 再生確認</b> で聴いて、よければ <b>💾 書き出し</b> で保存してください。<br>直したいところは「◀ 戻る」で前のステップに戻れます</div>
+      </div>
+      <div class="step-nav">
+        <button class="nav-back" data-goto="5">◀ 戻る</button>
+        <button class="nav-next" data-goto="2">最初のステップへ ▶</button>
       </div>
     </div>
 
@@ -1966,32 +1984,59 @@ class PitchShifter {
     return mono;
   }
 
-  const modeToggle = el('modeToggle');
-  const regionSection = el('regionSection');
-  const globalSection = el('globalSection');
-  const modePlaceholder = el('modePlaceholder');
   const tapHint = el('tapHint');
-  modeToggle.addEventListener('click', (e) => {
-    const btn = e.target.closest('button'); if (!btn) return;
-    const mode = btn.dataset.mode;
-    currentMode = mode;
-    [...modeToggle.children].forEach(b => b.classList.toggle('active', b===btn));
-    regionSection.classList.toggle('hidden', mode !== 'region');
-    globalSection.classList.toggle('hidden', mode !== 'global');
-    tapHint.classList.toggle('hidden', mode !== 'region');
-    resetSelectionBtn.classList.toggle('hidden', mode !== 'region');
-    modePlaceholder.classList.add('hidden');
+  const stepBar = el('stepBar');
+  const regionPicker = el('regionPicker');
+  const FIRST_STEP = 2, LAST_STEP = 6;
+  let currentStep = FIRST_STEP;
+
+  // 区間を選ぶ操作盤は1つだけ作って、いま表示しているステップに move する
+  function mountRegionPicker(step) {
+    const slot = document.querySelector('.step-slot[data-slot="' + step + '"]');
+    if (slot && regionPicker.parentNode !== slot) slot.appendChild(regionPicker);
+    regionPicker.classList.toggle('hidden', !slot);
+  }
+
+  function goStep(n) {
+    currentStep = Math.max(FIRST_STEP, Math.min(LAST_STEP, n));
+    for (let s = FIRST_STEP; s <= LAST_STEP; s++) {
+      el('step' + s).classList.toggle('hidden', s !== currentStep);
+    }
+    // 区間を使うステップ(3と4)だけ、操作盤と波形タップを有効にする
+    const usesRegion = (currentStep === 3 || currentStep === 4);
+    mountRegionPicker(usesRegion ? currentStep : null);
+    tapHint.classList.toggle('hidden', !usesRegion);
+    resetSelectionBtn.classList.toggle('hidden', !usesRegion);
+    // 進み具合のバー
+    stepBar.innerHTML = '';
+    for (let s = FIRST_STEP; s <= LAST_STEP; s++) {
+      const i = document.createElement('i');
+      if (s < currentStep) i.className = 'done';
+      else if (s === currentStep) i.className = 'now';
+      stepBar.appendChild(i);
+    }
+    if (currentStep === 6) renderDoneSummary();
+    if (currentStep === 5) updateFadePreview();
+    if (currentStep === 4) updateCutPreview();
+    if (currentStep === 3) updateRegionPreview();
+    if (currentStep === 2) updateGlobalPreview();
     if (state.audioBuffer) drawWave(state.audioBuffer);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-goto]');
+    if (!btn) return;
+    goStep(parseInt(btn.dataset.goto, 10));
   });
 
-  state.trimStart = 0;      // 元の曲の時刻(秒)。0 = 先頭から
-  state.trimEnd = null;     // null = 曲の最後まで
   state.fadeIn = 0;
   state.fadeOut = 0;
   state.tempoBuffer = null; // テンポ変更だけ済んだ音(カット/フェード前)
   let regionDir = 'slow';
   let globalDir = 'slow';
-  let currentMode = null; // 'region' | 'global' | null
+  // 区間を選べるのは STEP3 と STEP4 のときだけ
+  function regionStepActive() { return currentStep === 3 || currentStep === 4; }
 
   function fmtTime(sec) {
     const m = Math.floor(sec/60), s = (sec%60).toFixed(1).padStart(4,'0');
@@ -2045,41 +2090,28 @@ class PitchShifter {
     return end;
   }
 
-  // 「いま適用中のカット」を踏まえた最終的な長さ(秒)。プレビュー表示用。
+  // 適用後の長さ(秒)。プレビュー表示用。
   function finalLengthFor(edits, g) {
     var buf = state.audioBuffer;
     if (!buf) return 0;
-    var a = state.trimStart > 0 ? originalToTempo(state.trimStart, edits, g) : 0;
-    var b = (state.trimEnd != null) ? originalToTempo(state.trimEnd, edits, g)
-                                    : projectedLength(edits, g, buf.length, buf.sampleRate) / buf.sampleRate;
-    return Math.max(0, b - a);
+    return projectedLength(edits, g, buf.length, buf.sampleRate) / buf.sampleRate;
   }
 
-  // ---------- 前後のカット と フェード ----------
-  // テンポ変更の結果(tempoBuffer)を切って端を薄くするだけなので、やり直しは一瞬で終わる。
+  // ---------- フェード ----------
+  // テンポ変更・カットの結果(tempoBuffer)の端を薄くするだけ。やり直しは一瞬で終わる。
   function buildFinalBuffer() {
     var tempo = state.tempoBuffer;
     if (!tempo) { state.processedBuffer = null; return; }
-    var hasTrim = (state.trimStart > 0) || (state.trimEnd != null);
-    var hasFade = (state.fadeIn > 0) || (state.fadeOut > 0);
-    if (!hasTrim && !hasFade) { state.processedBuffer = tempo; return; }
-
-    var sr = tempo.sampleRate;
-    // カット位置は「元の曲の時刻」で持っているので、テンポ変更後の時刻に直す
-    var a = state.trimStart > 0 ? originalToTempo(state.trimStart) : 0;
-    var b = (state.trimEnd != null) ? originalToTempo(state.trimEnd) : tempo.duration;
-    var s0 = Math.max(0, Math.min(tempo.length, Math.round(a * sr)));
-    var s1 = Math.max(s0 + 1, Math.min(tempo.length, Math.round(b * sr)));
-    var len = s1 - s0;
-
+    if (!(state.fadeIn > 0) && !(state.fadeOut > 0)) { state.processedBuffer = tempo; return; }
+    var sr = tempo.sampleRate, len = tempo.length;
     var out = audioCtx.createBuffer(tempo.numberOfChannels, len, sr);
     var fi = Math.min(Math.round(state.fadeIn * sr), len);
     var fo = Math.min(Math.round(state.fadeOut * sr), len);
     for (var c=0;c<tempo.numberOfChannels;c++) {
       var src = tempo.getChannelData(c);
       var dst = new Float32Array(len);
-      for (var i=0;i<len;i++) dst[i] = src[s0 + i];
-      // 等パワーではなく素直な直線フェード(音楽的に自然で、聴感の音量変化が読みやすい)
+      dst.set(src);
+      // 素直な直線フェード(聴感の音量変化が読みやすい)
       for (var j=0;j<fi;j++) dst[j] *= j / fi;
       for (var k=0;k<fo;k++) dst[len-1-k] *= k / fo;
       out.copyToChannel(dst, c);
@@ -2092,8 +2124,7 @@ class PitchShifter {
     if (!buf) return 0;
     // 「変更前」を聴いている時は、そのまま元の曲の時刻
     if (compareOriginal) return Math.max(0, Math.min(buf.duration, tProc));
-    // 先頭をカットしている分、再生位置はその分ずれている
-    var t = tProc + (state.trimStart > 0 ? originalToTempo(state.trimStart) : 0);
+    var t = tProc;
     // 全体変更は最後にかかっているので、先に外す
     if (state.globalEdit) t = t * computeSpeed(state.globalEdit.dir, state.globalEdit.pct);
     var sr = buf.sampleRate, totalLen = buf.length;
@@ -2162,10 +2193,7 @@ class PitchShifter {
     var regAfter = regBefore / computeSpeed(dir, pct);
     var cand = state.edits.concat([{ id:-1, type:'region', start:s, end:e, dir:dir, pct:pct }]);
     var afterTotal = finalLengthFor(cand, state.globalEdit);
-    var cutCand = state.edits.concat([{ id:-1, type:'cut', start:s, end:e }]);
-    var afterCut = finalLengthFor(cutCand, state.globalEdit);
-    box.innerHTML = lenRow('この区間', regBefore, regAfter) + lenRow('曲全体', nowTotal, afterTotal) +
-      '<div class="warn" style="color:#ff9fb0;">🗑 削除した場合は 曲全体 ' + fmtTime(nowTotal) + ' → ' + fmtTime(afterCut) + '</div>';
+    box.innerHTML = lenRow('この区間', regBefore, regAfter) + lenRow('曲全体', nowTotal, afterTotal);
   }
 
   // 全体セクションのプレビュー
@@ -2181,7 +2209,7 @@ class PitchShifter {
     box.innerHTML = lenRow('曲全体', nowTotal, afterTotal);
   }
 
-  function updatePreviews() { updateRegionPreview(); updateGlobalPreview(); }
+  function updatePreviews() { updateRegionPreview(); updateGlobalPreview(); updateCutPreview(); updateFadePreview(); }
 
   // ---------- 書き出しファイル名 ----------
   // 拡張子を落として、元の曲名だけ取り出す
@@ -2209,7 +2237,6 @@ class PitchShifter {
     if (state.globalEdit) {
       parts.push('全体' + state.globalEdit.pct + '%' + (state.globalEdit.dir === 'slow' ? '遅く' : '速く'));
     }
-    if (state.trimStart > 0 || state.trimEnd != null) parts.push('カット');
     if (state.fadeIn > 0 || state.fadeOut > 0) parts.push('フェード');
     var cuts = 0;
     for (var ci=0; ci<state.edits.length; ci++) if (state.edits[ci].type === 'cut') cuts++;
@@ -2273,7 +2300,6 @@ class PitchShifter {
       state.audioBuffer = buf;
       state.tempoBuffer = buf;
       state.processedBuffer = buf;
-      state.trimStart = 0; state.trimEnd = null;
       state.fadeIn = 0; state.fadeOut = 0;
       state.sourceName = baseFileName(file.name, '曲'); // 書き出し名のベースに使う
       if (typeof refreshExportName === 'function') refreshExportName(true); // 前の曲の名前を持ち越さない
@@ -2290,7 +2316,8 @@ class PitchShifter {
       compareBtn.classList.remove('on');
       compareBtn.textContent = '🔄 変更前の音と聴き比べる';
       compareNote.classList.add('hidden');
-      if (typeof resetTrimUI === 'function') resetTrimUI();
+      if (typeof resetStepUI === 'function') resetStepUI();
+      goStep(FIRST_STEP);
       updateTapHint();
       updatePreviews();
       drawWave(buf);
@@ -2334,21 +2361,16 @@ class PitchShifter {
     state.audioBuffer = null;
     state.processedBuffer = null;
     state.tempoBuffer = null;
-    state.trimStart = 0; state.trimEnd = null;
     state.fadeIn = 0; state.fadeOut = 0;
     state.edits = [];
     state.globalEdit = null;
-    currentMode = null;
+    goStep(FIRST_STEP);
     mainUI.classList.add('hidden');
     footerBar.classList.add('hidden');
     homeBtn.classList.add('hidden');
     emptyState.classList.remove('hidden');
     fileInput.value = '';
-    [...modeToggle.children].forEach(b => b.classList.remove('active'));
-    regionSection.classList.add('hidden');
-    globalSection.classList.add('hidden');
-    modePlaceholder.classList.remove('hidden');
-    if (typeof resetTrimUI === 'function') resetTrimUI();
+    if (typeof resetStepUI === 'function') resetStepUI();
     renderAppliedList();
   });
 
@@ -2403,7 +2425,7 @@ class PitchShifter {
       const h = Math.max(3, max * (cssHeight - 8));
       const sv = getTimeVal(startInput), ev = getTimeVal(endInput);
       const t = (i/barCount) * buffer.duration;
-      const inSel = currentMode === 'region' && !isNaN(sv) && !isNaN(ev) && t >= Math.min(sv,ev) && t <= Math.max(sv,ev) && Math.abs(ev-sv) > 0.01;
+      const inSel = regionStepActive() && !isNaN(sv) && !isNaN(ev) && t >= Math.min(sv,ev) && t <= Math.max(sv,ev) && Math.abs(ev-sv) > 0.01;
       ctx.fillStyle = inSel ? '#ff8ad1' : '#3a4160';
       ctx.fillRect(i*barW+0.5, (cssHeight-h)/2, Math.max(1, barW-1), h);
     }
@@ -2423,16 +2445,6 @@ class PitchShifter {
         ctx.fillText('削除', (x1+x2)/2 - 13, cssHeight - 6);
       }
     }
-    // カットした前後は暗くして、使わない部分が一目で分かるようにする
-    if (state.trimStart > 0 || state.trimEnd != null) {
-      const dur = buffer.duration;
-      ctx.fillStyle = 'rgba(11,14,23,0.72)';
-      if (state.trimStart > 0) ctx.fillRect(0, 0, (state.trimStart/dur)*cssWidth, cssHeight);
-      if (state.trimEnd != null) {
-        const x2 = (state.trimEnd/dur)*cssWidth;
-        ctx.fillRect(x2, 0, cssWidth - x2, cssHeight);
-      }
-    }
     timeLabels.innerHTML = '';
     for (let i=0;i<=4;i++) {
       const span = document.createElement('span');
@@ -2440,7 +2452,7 @@ class PitchShifter {
       timeLabels.appendChild(span);
     }
     // start/endマーカー線(区間モードの時だけ表示。入力が空なら描かない)
-    if (currentMode !== 'region') return;
+    if (!regionStepActive()) return;
     const s = getTimeVal(startInput), en = getTimeVal(endInput);
     if (!isNaN(s) && s >= 0 && s <= buffer.duration) {
       const x = (s/buffer.duration) * cssWidth;
@@ -2471,6 +2483,7 @@ class PitchShifter {
     updateTapHint();
     if (state.audioBuffer) drawWave(state.audioBuffer);
     updateRegionPreview();
+    updateCutPreview();
     showToast('選択をクリアしました。波形をタップして開始位置から選び直してください');
   });
 
@@ -2478,7 +2491,7 @@ class PitchShifter {
   // 握りつぶすことがあるので、ポインタの押し離しから自前でタップを判定する。
   function handleWaveTap(clientX) {
     if (!state.audioBuffer) return;
-    if (currentMode !== 'region') return; // 区間モードの時だけ開始/終了を選択できる
+    if (!regionStepActive()) return; // 区間を使うステップの時だけ選択できる
     const rect = waveCanvas.getBoundingClientRect(); // ズーム後も必ず取り直す
     if (!rect.width) return;
     const clickX = Math.max(0, Math.min(rect.width, clientX - rect.left));
@@ -2502,6 +2515,7 @@ class PitchShifter {
     updateTapHint();
     drawWave(state.audioBuffer);
     updateRegionPreview();
+    updateCutPreview();
   }
 
   onSafeTap(waveCanvas, (e) => handleWaveTap(e.clientX));
@@ -2526,8 +2540,8 @@ class PitchShifter {
   if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', scheduleWaveRedraw);
   }
-  startInput.addEventListener('change', () => { normalizeTimeInput(startInput); if (state.audioBuffer) drawWave(state.audioBuffer); updateRegionPreview(); });
-  endInput.addEventListener('change', () => { normalizeTimeInput(endInput); if (state.audioBuffer) drawWave(state.audioBuffer); updateRegionPreview(); });
+  startInput.addEventListener('change', () => { normalizeTimeInput(startInput); if (state.audioBuffer) drawWave(state.audioBuffer); updateRegionPreview(); updateCutPreview(); });
+  endInput.addEventListener('change', () => { normalizeTimeInput(endInput); if (state.audioBuffer) drawWave(state.audioBuffer); updateRegionPreview(); updateCutPreview(); });
 
   // ---------- トグル/スライダー ----------
   regionToggle.addEventListener('click', (e) => {
@@ -2564,27 +2578,20 @@ class PitchShifter {
   // ---------- 区間の位置を細かく決める ----------
   // 波形タップは1ピクセルが0.5秒以上あって粗いので、
   // (1)再生しながら位置を拾う (2)0.1秒ずつ動かす の2つを用意する。
-  const timeInputs = {
-    start: startInput, end: endInput,
-    trimStart: el('trimStartInput'), trimEnd: el('trimEndInput')
-  };
+  const timeInputs = { start: startInput, end: endInput };
   function inputFor(which) { return timeInputs[which]; }
-  function isTrimField(which) { return which === 'trimStart' || which === 'trimEnd'; }
 
   function applyTimeChange(which, sec) {
     const buf = state.audioBuffer;
     if (!buf) return;
     const v = Math.max(0, Math.min(buf.duration, sec));
     setTimeVal(inputFor(which), v);
-    if (isTrimField(which)) {
-      updateTrimPreview();
-    } else {
-      // 次にタップした時の挙動が自然になるよう、選択の順番も合わせる
-      state.selecting = (which === 'start') ? 'end' : 'start';
-      updateTapHint();
-      drawWave(buf);
-      updateRegionPreview();
-    }
+    // 次にタップした時の挙動が自然になるよう、選択の順番も合わせる
+    state.selecting = (which === 'start') ? 'end' : 'start';
+    updateTapHint();
+    drawWave(buf);
+    updateRegionPreview();
+    updateCutPreview();
     return v;
   }
 
@@ -2595,7 +2602,7 @@ class PitchShifter {
       ? (parseFloat(seekBar.value) / 1000 || 0)
       : currentPlayPosition();
     const v = applyTimeChange(which, processedToOriginal(tProc));
-    const names = { start: '開始', end: '終了', trimStart: '曲の始まり', trimEnd: '曲の終わり' };
+    const names = { start: '開始', end: '終了' };
     showToast(names[which] + 'を ' + fmtTime(v) + ' にしました');
   }
   document.querySelectorAll('[data-cue]').forEach(function (btn) {
@@ -2626,123 +2633,113 @@ class PitchShifter {
     btn.addEventListener('click', function (e) { e.preventDefault(); });
   });
 
-  // ---------- 前後のカット・フェードのUI ----------
-  const trimHead = el('trimHead'), trimSection = el('trimSection'), trimChev = el('trimChev');
-  const trimStartInput = el('trimStartInput'), trimEndInput = el('trimEndInput');
+  // ---------- フェード(STEP 5) ----------
   const fadeInSlider = el('fadeInSlider'), fadeOutSlider = el('fadeOutSlider');
   const fadeInVal = el('fadeInVal'), fadeOutVal = el('fadeOutVal');
-
-  onSafeTap(trimHead, () => {
-    const open = trimSection.classList.toggle('hidden');
-    trimHead.classList.toggle('on', !open);
-    trimChev.textContent = open ? '開く ▼' : '閉じる ▲';
-    if (!open) updateTrimPreview();
-  });
-
-  // スライダーは0.1秒刻み(0〜10秒)
   function fadeSecOf(slider) { return parseInt(slider.value, 10) / 10; }
   function updateFadeLabels() {
     fadeInVal.textContent = fadeSecOf(fadeInSlider).toFixed(1) + '秒';
     fadeOutVal.textContent = fadeSecOf(fadeOutSlider).toFixed(1) + '秒';
   }
   [fadeInSlider, fadeOutSlider].forEach(s => s.addEventListener('input', () => {
-    updateFadeLabels(); updateTrimPreview();
-  }));
-  [trimStartInput, trimEndInput].forEach(i => i.addEventListener('change', () => {
-    normalizeTimeInput(i); updateTrimPreview();
+    updateFadeLabels(); updateFadePreview();
   }));
 
-  // 入力欄の内容から、カット後の長さを見積もる
-  function trimCandidate() {
-    const buf = state.audioBuffer;
-    if (!buf) return null;
-    let a = getTimeVal(trimStartInput); if (isNaN(a)) a = 0;
-    let b = getTimeVal(trimEndInput);   if (isNaN(b)) b = buf.duration;
-    a = Math.max(0, Math.min(buf.duration, a));
-    b = Math.max(0, Math.min(buf.duration, b));
-    return { a, b, fadeIn: fadeSecOf(fadeInSlider), fadeOut: fadeSecOf(fadeOutSlider) };
-  }
-
-  function updateTrimPreview() {
-    const box = el('trimPreview');
-    if (!box) return;
-    const buf = state.audioBuffer;
-    const c = trimCandidate();
-    if (!buf || !c) { box.innerHTML = ''; return; }
-    const sr = buf.sampleRate;
-    const nowTotal = projectedLength(state.edits, state.globalEdit, buf.length, sr) / sr;
-    if (c.b <= c.a) {
-      box.innerHTML = '<div class="warn">「ここまで」が「ここから」より後になるように指定してください</div>';
-      return;
-    }
-    // カット後の長さ = テンポ変更後の時間軸での差
-    const after = Math.max(0, originalToTempo(c.b) - originalToTempo(c.a));
-    let html = lenRow('曲全体', nowTotal, after);
-    const cutHead = c.a > 0.001, cutTail = c.b < buf.duration - 0.001;
-    const notes = [];
-    if (cutHead) notes.push('前を ' + fmtTime(c.a) + ' ぶんカット');
-    if (cutTail) notes.push('後ろを ' + fmtTime(buf.duration - c.b) + ' ぶんカット');
-    if (c.fadeIn > 0) notes.push('フェードイン ' + c.fadeIn.toFixed(1) + '秒');
-    if (c.fadeOut > 0) notes.push('フェードアウト ' + c.fadeOut.toFixed(1) + '秒');
-    if (notes.length) html += '<div class="warn" style="color:#9096a8;">' + notes.join(' ／ ') + '</div>';
-    if (c.fadeIn + c.fadeOut > after) {
-      html += '<div class="warn">フェードが曲の長さを超えています。短くしてください</div>';
+  function updateFadePreview() {
+    const box = el('fadePreview');
+    if (!box || !state.audioBuffer) return;
+    const total = finalLengthFor(state.edits, state.globalEdit);
+    const fi = fadeSecOf(fadeInSlider), fo = fadeSecOf(fadeOutSlider);
+    let html = '<div class="row"><span class="k">曲の長さ</span><span class="v">' + fmtTime(total) + '</span></div>';
+    if (fi === 0 && fo === 0) {
+      html += '<div class="warn" style="color:#6d738a;">フェードなし（つけない場合は「使わない・次へ」でOKです）</div>';
+    } else {
+      const parts = [];
+      if (fi > 0) parts.push('最初の ' + fi.toFixed(1) + '秒 でだんだん大きく');
+      if (fo > 0) parts.push('最後の ' + fo.toFixed(1) + '秒 でだんだん小さく');
+      html += '<div class="warn" style="color:#9096a8;">' + parts.join('<br>') + '</div>';
+      if (fi + fo > total) html += '<div class="warn">フェードが曲の長さを超えています。短くしてください</div>';
     }
     box.innerHTML = html;
   }
 
-  onSafeTap(el('applyTrimBtn'), () => {
-    const buf = state.audioBuffer;
-    const c = trimCandidate();
-    if (!buf || !c) return;
-    if (c.b <= c.a) { showToast('「ここまで」が「ここから」より後になるように指定してください'); return; }
-    if (c.b - c.a < 0.5) { showToast('残る部分が短すぎます(0.5秒以上にしてください)'); return; }
+  onSafeTap(el('applyFadeBtn'), () => {
+    if (!state.audioBuffer) return;
+    const fi = fadeSecOf(fadeInSlider), fo = fadeSecOf(fadeOutSlider);
+    const total = finalLengthFor(state.edits, state.globalEdit);
+    if (fi + fo > total) { showToast('フェードが曲の長さを超えています。短くしてください'); return; }
     if (typeof stopPlayback === 'function') stopPlayback();
-    state.trimStart = c.a;
-    state.trimEnd = (c.b >= buf.duration - 0.001) ? null : c.b;
-    state.fadeIn = c.fadeIn;
-    state.fadeOut = c.fadeOut;
+    state.fadeIn = fi; state.fadeOut = fo;
     buildFinalBuffer();
     seekBar.max = Math.round(state.processedBuffer.duration * 1000);
     updateSeekUI(0);
     updatePlayExportState();
-    drawWave(buf);
     renderAppliedList();
     if (typeof refreshExportName === 'function') refreshExportName();
-    showToast('✓ 適用しました（長さ ' + fmtTime(state.processedBuffer.duration) + '）');
+    showToast(fi === 0 && fo === 0 ? 'フェードを解除しました' : '✓ フェードを適用しました');
   });
 
-  // 画面上のカット欄・フェードだけを初期状態に戻す(音の状態は触らない)
-  function resetTrimUI() {
-    trimStartInput.value = ''; trimEndInput.value = '';
-    fadeInSlider.value = 0; fadeOutSlider.value = 0;
-    updateFadeLabels();
-    trimSection.classList.add('hidden');
-    trimHead.classList.remove('on');
-    trimChev.textContent = '開く ▼';
-  }
-
-  function clearTrimFade() {
-    const buf = state.audioBuffer;
+  function clearFade() {
     if (typeof stopPlayback === 'function') stopPlayback();
-    state.trimStart = 0; state.trimEnd = null;
     state.fadeIn = 0; state.fadeOut = 0;
-    trimStartInput.value = ''; trimEndInput.value = '';
     fadeInSlider.value = 0; fadeOutSlider.value = 0;
     updateFadeLabels();
-    if (buf) {
+    if (state.audioBuffer) {
       buildFinalBuffer();
       seekBar.max = Math.round(state.processedBuffer.duration * 1000);
       updateSeekUI(0);
       updatePlayExportState();
     }
-    if (buf) drawWave(buf);
     renderAppliedList();
-    updateTrimPreview();
+    updateFadePreview();
     if (typeof refreshExportName === 'function') refreshExportName();
-    showToast('カットとフェードを解除しました');
   }
-  onSafeTap(el('clearTrimBtn'), clearTrimFade);
+
+  function resetStepUI() {
+    fadeInSlider.value = 0; fadeOutSlider.value = 0;
+    updateFadeLabels();
+    startInput.value = ''; endInput.value = '';
+  }
+
+  // ---------- カットのプレビュー(STEP 4) ----------
+  function updateCutPreview() {
+    const box = el('cutPreview');
+    if (!box || !state.audioBuffer) return;
+    const buf = state.audioBuffer;
+    const nowTotal = finalLengthFor(state.edits, state.globalEdit);
+    const s = getTimeVal(startInput);
+    let e = getTimeVal(endInput);
+    if (isNaN(s) || isNaN(e) || e <= s) {
+      box.innerHTML = '<div class="row"><span class="k">今の曲の長さ</span><span class="v">' + fmtTime(nowTotal) + '</span></div>' +
+                      '<div class="warn">カットしたい区間の開始と終了を決めてください</div>';
+      return;
+    }
+    e = Math.min(e, buf.duration);
+    const cand = state.edits.concat([{ id:-1, type:'cut', start:s, end:e }]);
+    const after = finalLengthFor(cand, state.globalEdit);
+    box.innerHTML =
+      '<div class="row"><span class="k">カットする長さ</span><span class="v">' + fmtTime(e - s) + '</span></div>' +
+      lenRow('曲全体', nowTotal, after);
+  }
+
+  // ---------- できあがり(STEP 6) ----------
+  function renderDoneSummary() {
+    const box = el('doneSummary');
+    if (!box || !state.audioBuffer) return;
+    const total = state.processedBuffer ? state.processedBuffer.duration : 0;
+    const lines = [];
+    if (state.globalEdit) lines.push('🌍 曲全体を ' + state.globalEdit.pct + '%' + (state.globalEdit.dir==='slow'?'遅く':'速く'));
+    const speedEdits = state.edits.filter(e => e.type !== 'cut');
+    const cutEdits = state.edits.filter(e => e.type === 'cut');
+    speedEdits.forEach(e => lines.push('⏩ ' + fmtTime(e.start) + '〜' + fmtTime(e.end) + ' を ' + e.pct + '%' + (e.dir==='slow'?'遅く':'速く')));
+    cutEdits.forEach(e => lines.push('✂️ ' + fmtTime(e.start) + '〜' + fmtTime(e.end) + ' をカット'));
+    if (state.fadeIn > 0) lines.push('🔈 フェードイン ' + state.fadeIn.toFixed(1) + '秒');
+    if (state.fadeOut > 0) lines.push('🔉 フェードアウト ' + state.fadeOut.toFixed(1) + '秒');
+    box.innerHTML =
+      '<div class="big">' + fmtTime(state.audioBuffer.duration) + ' → ' + fmtTime(total) + '</div>' +
+      (lines.length ? lines.map(l => '<div>' + l + '</div>').join('')
+                    : '<div class="none">まだ何も変更していません</div>');
+  }
 
   // ---------- 設定の記憶 ----------
   // よく使う設定だけ端末に覚えさせる。曲ごとの内容(区間やカット位置)は覚えない。
@@ -2899,21 +2896,17 @@ class PitchShifter {
       appliedList.appendChild(note);
       return;
     }
-    // カット・フェードの状態を1行で表示(✕で解除できる)
-    if (state.trimStart > 0 || state.trimEnd != null || state.fadeIn > 0 || state.fadeOut > 0) {
+    // フェードの状態を1行で表示(✕で解除できる)
+    if (state.fadeIn > 0 || state.fadeOut > 0) {
       const parts = [];
-      if (state.trimStart > 0 || state.trimEnd != null) {
-        parts.push(fmtTime(state.trimStart) + ' 〜 ' +
-          fmtTime(state.trimEnd != null ? state.trimEnd : state.audioBuffer.duration) + ' を使う');
-      }
       if (state.fadeIn > 0) parts.push('フェードイン' + state.fadeIn.toFixed(1) + '秒');
       if (state.fadeOut > 0) parts.push('フェードアウト' + state.fadeOut.toFixed(1) + '秒');
       const chip = document.createElement('div');
       chip.className = 'chip';
-      chip.innerHTML = '<span class="txt">✄ <b>' + parts.join(' ／ ') + '</b></span>';
+      chip.innerHTML = '<span class="txt">🔈 <b>' + parts.join(' ／ ') + '</b></span>';
       const x = document.createElement('button');
       x.className = 'x'; x.textContent = '✕';
-      x.addEventListener('click', () => { clearTrimFade(); });
+      x.addEventListener('click', () => { clearFade(); });
       chip.appendChild(x);
       appliedList.appendChild(chip);
     }
@@ -3304,7 +3297,6 @@ class PitchShifter {
   // 編集が1つでもあるときだけ、聴き比べボタンを出す
   function hasAnyEdit() {
     return state.edits.length > 0 || !!state.globalEdit ||
-           state.trimStart > 0 || state.trimEnd != null ||
            state.fadeIn > 0 || state.fadeOut > 0;
   }
   function updateCompareVisibility() {
