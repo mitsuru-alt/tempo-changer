@@ -132,6 +132,22 @@
     font-size: 15px; font-weight: 700; text-align: center; font-variant-numeric: tabular-nums;
   }
   .arrow { color: #4a5170; font-size: 14px; }
+  .nudge-row { display: flex; gap: 6px; margin-top: 8px; }
+  .nudge-row button {
+    flex: 1; min-height: 40px; border-radius: 9px;
+    border: 1px solid #2a3050; background: #1a1f35; color: #cfd2dd;
+    font-size: 15px; font-weight: 800; line-height: 1;
+  }
+  .nudge-row button:active { background: #3730a6; color: #e4e2ff; }
+  .cue-row { display: flex; gap: 8px; margin-bottom: 14px; }
+  .cue-row button {
+    flex: 1; min-height: 52px; padding: 8px 6px; border-radius: 12px;
+    border: 1px solid #3a4a2e; background: #16210f; color: #a8e39a;
+    font-size: 12.5px; font-weight: 800; line-height: 1.4;
+  }
+  .cue-row button b { display: block; font-size: 13.5px; }
+  .cue-row button small { font-size: 10.5px; opacity: 0.8; font-weight: 700; }
+  .cue-row button:active { background: #2a4018; }
   .pct-presets { display: flex; gap: 6px; margin-top: 12px; }
   .pct-presets button {
     flex: 1; min-height: 44px; border-radius: 10px;
@@ -144,6 +160,25 @@
     font-size: 11.5px; color: #6d738a; line-height: 1.5;
   }
   .pct-extend input { width: 20px; height: 20px; flex-shrink: 0; }
+  .trim-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    margin: 20px 18px 10px; padding: 14px 16px; min-height: 56px; box-sizing: border-box;
+    background: #151827; border: 1px solid #232840; border-radius: 14px;
+    font-size: 15.5px; font-weight: 800; color: #f0f1f6;
+  }
+  .trim-head .chev { color: #6d738a; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+  .trim-head.on { background: #1d2340; border-color: #3a4270; }
+  .fade-row { margin-top: 14px; }
+  .fade-row .fade-label {
+    display: flex; justify-content: space-between; font-size: 13px;
+    font-weight: 700; color: #cfd2dd; margin-bottom: 2px;
+  }
+  .fade-row .fade-label span:last-child { color: #ff8ad1; font-variant-numeric: tabular-nums; }
+  .region-actions { display: flex; gap: 8px; }
+  .region-actions .apply-btn { margin-top: 0; }
+  .btn-cut { background: #4a1220 !important; color: #ffb3c4 !important; flex: 0.75; }
+  .trim-actions { display: flex; gap: 8px; margin-top: 4px; }
+  .trim-actions .apply-btn { margin-top: 0; }
   .len-preview {
     margin-top: 12px; padding: 11px 13px; border-radius: 12px;
     background: #12131f; border: 1px solid #232840;
@@ -296,7 +331,10 @@
   .export-choice:active { background: #1a1f35; }
   .export-choice-title { font-size: 14px; font-weight: 800; margin-bottom: 4px; }
   .export-choice-sub { font-size: 11.5px; color: #9096a8; }
-  .export-progress { text-align: center; font-size: 12.5px; color: #7de3a8; padding: 10px 0; }
+  .export-progress { text-align: center; font-size: 13px; color: #7de3a8; padding: 12px 0 4px; font-weight: 700; }
+  .export-bar { height: 8px; border-radius: 999px; background: #232840; overflow: hidden; margin-bottom: 6px; }
+  .export-bar > i { display: block; height: 100%; width: 0%; border-radius: 999px;
+    background: linear-gradient(90deg, #ff6ec7, #a78bfa); transition: width 0.12s linear; }
   .export-name-box {
     background: #0e1120; border: 1px solid #2a3050; border-radius: 14px;
     padding: 12px 14px; margin-bottom: 12px;
@@ -334,7 +372,7 @@
   <div class="header">
     <div class="brand"><span class="logo">mDANCE</span><span class="badge">FREE</span></div>
     <div style="display:flex;align-items:center;gap:8px;">
-      <span class="subtitle">テンポチェンジャー <span style="opacity:0.5;">· v30</span></span>
+      <span class="subtitle">テンポチェンジャー <span style="opacity:0.5;">· v36</span></span>
       <button class="home-btn hidden" id="homeBtn" title="曲選択に戻る">🏠</button>
       <button class="help-btn" id="helpBtn">?</button>
     </div>
@@ -357,19 +395,28 @@
         </div>
         <div class="help-step">
           <div class="help-step-title">3️⃣-✂️ 区間だけ変える場合</div>
-          <p>👆 波形を<b>1回タップ=開始位置</b>(緑の線)、<b>もう1回タップ=終了位置</b>(ピンクの線)。時間を直接入力してもOK(<b>0:12.5</b> のように)✏️<br>そのあと「遅く/速く」と%を決めて「この区間に適用」をタップ!複数の区間を重ねてもOKです🎯</p>
+          <p>👆 まず波形をタップしてだいたいの位置を決めます(1回目=開始、2回目=終了)。<br>🎧 <b>もっと正確に決めたい時</b>は「▶ 再生確認」で聴きながら、ちょうどの瞬間に<b>「⏱ ここを開始に」</b>を押してください。<br>🔧 <b>−0.1 / +0.1</b> ボタンで細かく追い込めます(押しっぱなしで連続)。時間の直接入力もOK✏️<br>そのあと「遅く/速く」と%を決めて「この区間に適用」をタップ!🎯<br>
+          🗑 <b>その区間をまるごと消したい時</b>は「この区間を削除」をタップ。削除した場所は波形に<b>赤い帯</b>で出ます。前後は自動でなめらかに繋がります✨</p>
         </div>
         <div class="help-step">
           <div class="help-step-title">3️⃣-🌍 全体を変える場合</div>
           <p>「遅く/速く」と%を決めて「全体に適用」をタップするだけ!</p>
         </div>
         <div class="help-step">
-          <div class="help-step-title">4️⃣ 確認して保存 ▶️💾</div>
+          <div class="help-step-title">4️⃣ 前後をカット・フェード ✄（任意）</div>
+          <p>「✄ 前後をカット・フェード」をタップすると開きます。<b>イントロを切る・後奏を切る</b>のに使ってください✂️<br>位置の決め方は区間と同じで、<b>再生しながら「⏱ ここから始める」</b>が確実です。<br>フェードは0〜10秒で、<b>だんだん大きく/小さく</b>なります。舞台の出はけに合わせたい時に🎭<br>カットした部分は波形が暗くなるので、どこを使うか一目で分かります</p>
+        </div>
+        <div class="help-step">
+          <div class="help-step-title">5️⃣ 確認して保存 ▶️💾</div>
           <p>「▶ 再生確認」で聴いてみて、良ければ「💾 書き出し」から <b>WAV(高音質)</b>か<b>MP3(軽量・約1/10)</b>を選んで保存📥<br>白いバーをドラッグすると、<b>ドラッグ中もその場所の音が鳴る</b>ので、耳で頭出しできます🎧 離すとそこから続けて再生されます</p>
         </div>
         <div class="help-step">
           <div class="help-step-title">✈️ 電波がなくても使えます</div>
           <p>一度このページを開いておけば、<b>次からは電波がない場所でも起動できます</b>📶 スタジオや劇場で通信が不安定でも大丈夫。「📱 ホーム画面にアプリとして追加」しておくとさらに安心です</p>
+        </div>
+        <div class="help-step">
+          <div class="help-step-title">⚙️ 設定は覚えています</div>
+          <p>「遅く/速く」「%」「省メモリモード」などは<b>次に開いた時もそのまま</b>です⚙️ いつも8%遅くで使うなら、毎回選び直す必要はありません<br>※ 曲ごとの内容(区間・カット位置)は覚えないので、新しい曲は毎回まっさらから始まります</p>
         </div>
         <div class="help-step">
           <div class="help-step-title">💡 便利ワザ</div>
@@ -464,12 +511,24 @@
           <div class="time-box">
             <div class="lbl">開始</div>
             <input type="text" id="startInput" inputmode="text" autocomplete="off" placeholder="0:00.0">
+            <div class="nudge-row">
+              <button data-nudge="start" data-d="-0.1">−0.1</button>
+              <button data-nudge="start" data-d="0.1">+0.1</button>
+            </div>
           </div>
           <span class="arrow">→</span>
           <div class="time-box">
             <div class="lbl">終了</div>
             <input type="text" id="endInput" inputmode="text" autocomplete="off" placeholder="0:00.0">
+            <div class="nudge-row">
+              <button data-nudge="end" data-d="-0.1">−0.1</button>
+              <button data-nudge="end" data-d="0.1">+0.1</button>
+            </div>
           </div>
+        </div>
+        <div class="cue-row">
+          <button data-cue="start"><b>⏱ ここを開始に</b><small>再生しながら押す</small></button>
+          <button data-cue="end"><b>⏱ ここを終了に</b><small>再生しながら押す</small></button>
         </div>
         <div class="pct-row">
           <div class="pct-toggle" id="regionToggle">
@@ -486,7 +545,10 @@
         <label class="pct-extend"><input type="checkbox" data-extend="region">
           <span>16%より大きく変えたい(最大50%まで)</span></label>
         <div class="len-preview" id="regionPreview"></div>
-        <button class="apply-btn" id="applyRegionBtn">この区間に適用</button>
+        <div class="region-actions">
+          <button class="apply-btn" id="applyRegionBtn">この区間に適用</button>
+          <button class="apply-btn btn-cut" id="cutRegionBtn">🗑 この区間を削除</button>
+        </div>
       </div>
     </div>
 
@@ -509,6 +571,51 @@
           <span>16%より大きく変えたい(最大50%まで)</span></label>
         <div class="len-preview" id="globalPreview"></div>
         <button class="apply-btn" id="applyGlobalBtn">全体に適用</button>
+      </div>
+    </div>
+
+    <div class="trim-head" id="trimHead">
+      <span>✄ 前後をカット・フェード<span style="font-weight:700;font-size:12px;color:#6d738a;">（任意）</span></span>
+      <span class="chev" id="trimChev">開く ▼</span>
+    </div>
+    <div id="trimSection" class="hidden">
+      <div class="card">
+        <div class="time-inputs">
+          <div class="time-box">
+            <div class="lbl">ここから</div>
+            <input type="text" id="trimStartInput" inputmode="text" autocomplete="off" placeholder="0:00.0">
+            <div class="nudge-row">
+              <button data-nudge="trimStart" data-d="-0.1">−0.1</button>
+              <button data-nudge="trimStart" data-d="0.1">+0.1</button>
+            </div>
+          </div>
+          <span class="arrow">→</span>
+          <div class="time-box">
+            <div class="lbl">ここまで</div>
+            <input type="text" id="trimEndInput" inputmode="text" autocomplete="off" placeholder="曲の最後">
+            <div class="nudge-row">
+              <button data-nudge="trimEnd" data-d="-0.1">−0.1</button>
+              <button data-nudge="trimEnd" data-d="0.1">+0.1</button>
+            </div>
+          </div>
+        </div>
+        <div class="cue-row">
+          <button data-cue="trimStart"><b>⏱ ここから始める</b><small>再生しながら押す</small></button>
+          <button data-cue="trimEnd"><b>⏱ ここで終える</b><small>再生しながら押す</small></button>
+        </div>
+        <div class="fade-row">
+          <div class="fade-label"><span>🔈 フェードイン(だんだん大きく)</span><span id="fadeInVal">0.0秒</span></div>
+          <input type="range" id="fadeInSlider" min="0" max="100" value="0">
+        </div>
+        <div class="fade-row">
+          <div class="fade-label"><span>🔉 フェードアウト(だんだん小さく)</span><span id="fadeOutVal">0.0秒</span></div>
+          <input type="range" id="fadeOutSlider" min="0" max="100" value="0">
+        </div>
+        <div class="len-preview" id="trimPreview"></div>
+        <div class="trim-actions">
+          <button class="apply-btn" id="applyTrimBtn">この設定を適用</button>
+          <button class="apply-btn" id="clearTrimBtn" style="flex:0.5;background:#232840;color:#9096a8;">解除</button>
+        </div>
       </div>
     </div>
 
@@ -550,7 +657,10 @@
         <div class="export-choice-title">📦 MP3(軽量)</div>
         <div class="export-choice-sub">ファイルサイズ約1/10。LINE等で送るのに便利</div>
       </button>
-      <div class="export-progress hidden" id="exportProgress">変換中...</div>
+      <div class="hidden" id="exportProgressWrap">
+        <div class="export-progress" id="exportProgress">変換中...</div>
+        <div class="export-bar"><i id="exportBar"></i></div>
+      </div>
     </div>
   </div>
 </div>
@@ -1874,6 +1984,11 @@ class PitchShifter {
     if (state.audioBuffer) drawWave(state.audioBuffer);
   });
 
+  state.trimStart = 0;      // 元の曲の時刻(秒)。0 = 先頭から
+  state.trimEnd = null;     // null = 曲の最後まで
+  state.fadeIn = 0;
+  state.fadeOut = 0;
+  state.tempoBuffer = null; // テンポ変更だけ済んだ音(カット/フェード前)
   let regionDir = 'slow';
   let globalDir = 'slow';
   let currentMode = null; // 'region' | 'global' | null
@@ -1881,6 +1996,121 @@ class PitchShifter {
   function fmtTime(sec) {
     const m = Math.floor(sec/60), s = (sec%60).toFixed(1).padStart(4,'0');
     return m + ':' + s;
+  }
+
+  // ---------- 再生位置 → 元の曲の時刻 への変換 ----------
+  // すでに変更を適用していると、再生中の位置と元の曲の時刻はズレる。
+  // 「ここを開始に」を正しく動かすため、区間の切り貼りを逆算して元の時刻に戻す。
+  function editSegments(totalLen, sampleRate, editsOpt) {
+    var segs = [], cursor = 0;
+    var list = editsOpt || state.edits;
+    var sorted = list.slice().sort(function(a,b){ return a.start - b.start; });
+    for (var i=0;i<sorted.length;i++) {
+      var ed = sorted[i];
+      var s = Math.max(0, Math.round(ed.start * sampleRate));
+      var e = Math.min(totalLen, Math.round(ed.end * sampleRate));
+      if (s > cursor) segs.push({ s: cursor, e: s, speed: 1 });
+      s = Math.max(s, cursor);
+      if (e > s && ed.type !== 'cut') segs.push({ s: s, e: e, speed: computeSpeed(ed.dir, ed.pct) });
+      cursor = Math.max(cursor, e);
+    }
+    if (cursor < totalLen) segs.push({ s: cursor, e: totalLen, speed: 1 });
+    if (segs.length === 0) segs.push({ s: 0, e: totalLen, speed: 1 });
+    return segs;
+  }
+
+  // 元の曲の時刻 → テンポ変更後の時刻(processedToOriginal の逆)
+  function originalToTempo(tOrig, editsOpt, globalOpt) {
+    var buf = state.audioBuffer;
+    if (!buf) return 0;
+    var g = (globalOpt === undefined) ? state.globalEdit : globalOpt;
+    var sr = buf.sampleRate, totalLen = buf.length;
+    var segs = editSegments(totalLen, sr, editsOpt);
+    var T = Math.max(0, Math.min(totalLen, tOrig * sr));
+    var acc = 0;
+    for (var i=0;i<segs.length;i++) {
+      var sg = segs[i];
+      var inLen = sg.e - sg.s, outLen = Math.round(inLen / sg.speed);
+      if (T < sg.e || i === segs.length - 1) {
+        var fr = inLen > 0 ? (T - sg.s) / inLen : 0;
+        fr = Math.max(0, Math.min(1, fr));
+        var t = (acc + fr * outLen) / sr;
+        if (g) t = t / computeSpeed(g.dir, g.pct);
+        return t;
+      }
+      acc += outLen;
+    }
+    var end = acc / sr;
+    if (g) end = end / computeSpeed(g.dir, g.pct);
+    return end;
+  }
+
+  // 「いま適用中のカット」を踏まえた最終的な長さ(秒)。プレビュー表示用。
+  function finalLengthFor(edits, g) {
+    var buf = state.audioBuffer;
+    if (!buf) return 0;
+    var a = state.trimStart > 0 ? originalToTempo(state.trimStart, edits, g) : 0;
+    var b = (state.trimEnd != null) ? originalToTempo(state.trimEnd, edits, g)
+                                    : projectedLength(edits, g, buf.length, buf.sampleRate) / buf.sampleRate;
+    return Math.max(0, b - a);
+  }
+
+  // ---------- 前後のカット と フェード ----------
+  // テンポ変更の結果(tempoBuffer)を切って端を薄くするだけなので、やり直しは一瞬で終わる。
+  function buildFinalBuffer() {
+    var tempo = state.tempoBuffer;
+    if (!tempo) { state.processedBuffer = null; return; }
+    var hasTrim = (state.trimStart > 0) || (state.trimEnd != null);
+    var hasFade = (state.fadeIn > 0) || (state.fadeOut > 0);
+    if (!hasTrim && !hasFade) { state.processedBuffer = tempo; return; }
+
+    var sr = tempo.sampleRate;
+    // カット位置は「元の曲の時刻」で持っているので、テンポ変更後の時刻に直す
+    var a = state.trimStart > 0 ? originalToTempo(state.trimStart) : 0;
+    var b = (state.trimEnd != null) ? originalToTempo(state.trimEnd) : tempo.duration;
+    var s0 = Math.max(0, Math.min(tempo.length, Math.round(a * sr)));
+    var s1 = Math.max(s0 + 1, Math.min(tempo.length, Math.round(b * sr)));
+    var len = s1 - s0;
+
+    var out = audioCtx.createBuffer(tempo.numberOfChannels, len, sr);
+    var fi = Math.min(Math.round(state.fadeIn * sr), len);
+    var fo = Math.min(Math.round(state.fadeOut * sr), len);
+    for (var c=0;c<tempo.numberOfChannels;c++) {
+      var src = tempo.getChannelData(c);
+      var dst = new Float32Array(len);
+      for (var i=0;i<len;i++) dst[i] = src[s0 + i];
+      // 等パワーではなく素直な直線フェード(音楽的に自然で、聴感の音量変化が読みやすい)
+      for (var j=0;j<fi;j++) dst[j] *= j / fi;
+      for (var k=0;k<fo;k++) dst[len-1-k] *= k / fo;
+      out.copyToChannel(dst, c);
+    }
+    state.processedBuffer = out;
+  }
+
+  function processedToOriginal(tProc) {
+    var buf = state.audioBuffer;
+    if (!buf) return 0;
+    // 「変更前」を聴いている時は、そのまま元の曲の時刻
+    if (compareOriginal) return Math.max(0, Math.min(buf.duration, tProc));
+    // 先頭をカットしている分、再生位置はその分ずれている
+    var t = tProc + (state.trimStart > 0 ? originalToTempo(state.trimStart) : 0);
+    // 全体変更は最後にかかっているので、先に外す
+    if (state.globalEdit) t = t * computeSpeed(state.globalEdit.dir, state.globalEdit.pct);
+    var sr = buf.sampleRate, totalLen = buf.length;
+    var segs = editSegments(totalLen, sr);
+    var target = t * sr, acc = 0;
+    for (var i=0;i<segs.length;i++) {
+      var sg = segs[i];
+      var inLen = sg.e - sg.s;
+      var outLen = Math.round(inLen / sg.speed);
+      if (target < acc + outLen || i === segs.length - 1) {
+        var frac = outLen > 0 ? (target - acc) / outLen : 0;
+        frac = Math.max(0, Math.min(1, frac));
+        return Math.max(0, Math.min(buf.duration, (sg.s + frac * inLen) / sr));
+      }
+      acc += outLen;
+    }
+    return buf.duration;
   }
 
   // ---------- 適用後の長さを先読みする ----------
@@ -1893,7 +2123,8 @@ class PitchShifter {
       var s = Math.max(0, Math.round(ed.start * sampleRate));
       var e = Math.min(totalLen, Math.round(ed.end * sampleRate));
       if (s > cursor) out += s - cursor;
-      if (e > s) out += Math.round((e - s) / computeSpeed(ed.dir, ed.pct));
+      s = Math.max(s, cursor);
+      if (e > s && ed.type !== 'cut') out += Math.round((e - s) / computeSpeed(ed.dir, ed.pct));
       cursor = Math.max(cursor, e);
     }
     if (cursor < totalLen) out += totalLen - cursor;
@@ -1918,7 +2149,7 @@ class PitchShifter {
     if (!buf) { box.innerHTML = ''; return; }
     var sr = buf.sampleRate, totalLen = buf.length;
     var s = getTimeVal(startInput), e = getTimeVal(endInput);
-    var nowTotal = projectedLength(state.edits, state.globalEdit, totalLen, sr) / sr;
+    var nowTotal = finalLengthFor(state.edits, state.globalEdit);
     if (isNaN(s) || isNaN(e) || e <= s) {
       box.innerHTML = '<div class="row"><span class="k">今の曲の長さ</span>' +
                       '<span class="v">' + fmtTime(nowTotal) + '</span></div>' +
@@ -1930,8 +2161,11 @@ class PitchShifter {
     var regBefore = e - s;
     var regAfter = regBefore / computeSpeed(dir, pct);
     var cand = state.edits.concat([{ id:-1, type:'region', start:s, end:e, dir:dir, pct:pct }]);
-    var afterTotal = projectedLength(cand, state.globalEdit, totalLen, sr) / sr;
-    box.innerHTML = lenRow('この区間', regBefore, regAfter) + lenRow('曲全体', nowTotal, afterTotal);
+    var afterTotal = finalLengthFor(cand, state.globalEdit);
+    var cutCand = state.edits.concat([{ id:-1, type:'cut', start:s, end:e }]);
+    var afterCut = finalLengthFor(cutCand, state.globalEdit);
+    box.innerHTML = lenRow('この区間', regBefore, regAfter) + lenRow('曲全体', nowTotal, afterTotal) +
+      '<div class="warn" style="color:#ff9fb0;">🗑 削除した場合は 曲全体 ' + fmtTime(nowTotal) + ' → ' + fmtTime(afterCut) + '</div>';
   }
 
   // 全体セクションのプレビュー
@@ -1941,9 +2175,9 @@ class PitchShifter {
     var buf = state.audioBuffer;
     if (!buf) { box.innerHTML = ''; return; }
     var sr = buf.sampleRate, totalLen = buf.length;
-    var nowTotal = projectedLength(state.edits, state.globalEdit, totalLen, sr) / sr;
+    var nowTotal = finalLengthFor(state.edits, state.globalEdit);
     var cand = { dir: globalDir, pct: parseInt(globalPct.value, 10) };
-    var afterTotal = projectedLength(state.edits, cand, totalLen, sr) / sr;
+    var afterTotal = finalLengthFor(state.edits, cand);
     box.innerHTML = lenRow('曲全体', nowTotal, afterTotal);
   }
 
@@ -1975,9 +2209,15 @@ class PitchShifter {
     if (state.globalEdit) {
       parts.push('全体' + state.globalEdit.pct + '%' + (state.globalEdit.dir === 'slow' ? '遅く' : '速く'));
     }
-    var n = state.edits.length;
+    if (state.trimStart > 0 || state.trimEnd != null) parts.push('カット');
+    if (state.fadeIn > 0 || state.fadeOut > 0) parts.push('フェード');
+    var cuts = 0;
+    for (var ci=0; ci<state.edits.length; ci++) if (state.edits[ci].type === 'cut') cuts++;
+    if (cuts > 0) parts.push(cuts + 'か所削除');
+    var n = state.edits.length - cuts;
     if (n === 1) {
-      var ed = state.edits[0];
+      var ed = null;
+      for (var ei=0; ei<state.edits.length; ei++) if (state.edits[ei].type !== 'cut') ed = state.edits[ei];
       parts.push('1か所' + ed.pct + '%' + (ed.dir === 'slow' ? '遅く' : '速く'));
     } else if (n > 1) {
       parts.push(n + 'か所変更');
@@ -2031,7 +2271,10 @@ class PitchShifter {
         showToast('長めの曲です。処理が重い/落ちる場合は「省メモリモード」を試してください(曲選択画面のチェックボックス)', 6000);
       }
       state.audioBuffer = buf;
+      state.tempoBuffer = buf;
       state.processedBuffer = buf;
+      state.trimStart = 0; state.trimEnd = null;
+      state.fadeIn = 0; state.fadeOut = 0;
       state.sourceName = baseFileName(file.name, '曲'); // 書き出し名のベースに使う
       if (typeof refreshExportName === 'function') refreshExportName(true); // 前の曲の名前を持ち越さない
       state.edits = [];
@@ -2047,6 +2290,7 @@ class PitchShifter {
       compareBtn.classList.remove('on');
       compareBtn.textContent = '🔄 変更前の音と聴き比べる';
       compareNote.classList.add('hidden');
+      if (typeof resetTrimUI === 'function') resetTrimUI();
       updateTapHint();
       updatePreviews();
       drawWave(buf);
@@ -2089,6 +2333,9 @@ class PitchShifter {
     if (typeof stopPlayback === 'function') stopPlayback();
     state.audioBuffer = null;
     state.processedBuffer = null;
+    state.tempoBuffer = null;
+    state.trimStart = 0; state.trimEnd = null;
+    state.fadeIn = 0; state.fadeOut = 0;
     state.edits = [];
     state.globalEdit = null;
     currentMode = null;
@@ -2101,6 +2348,8 @@ class PitchShifter {
     regionSection.classList.add('hidden');
     globalSection.classList.add('hidden');
     modePlaceholder.classList.remove('hidden');
+    if (typeof resetTrimUI === 'function') resetTrimUI();
+    renderAppliedList();
   });
 
   // confirmダイアログは埋め込み環境でブロックされるため、2回タップで確定する方式にする
@@ -2157,6 +2406,32 @@ class PitchShifter {
       const inSel = currentMode === 'region' && !isNaN(sv) && !isNaN(ev) && t >= Math.min(sv,ev) && t <= Math.max(sv,ev) && Math.abs(ev-sv) > 0.01;
       ctx.fillStyle = inSel ? '#ff8ad1' : '#3a4160';
       ctx.fillRect(i*barW+0.5, (cssHeight-h)/2, Math.max(1, barW-1), h);
+    }
+    // 削除した区間は赤い帯で示す
+    const durAll = buffer.duration;
+    for (let ci=0; ci<state.edits.length; ci++) {
+      const ed = state.edits[ci];
+      if (ed.type !== 'cut') continue;
+      const x1 = (ed.start/durAll)*cssWidth, x2 = (ed.end/durAll)*cssWidth;
+      ctx.fillStyle = 'rgba(180,30,60,0.42)';
+      ctx.fillRect(x1, 0, Math.max(1.5, x2-x1), cssHeight);
+      ctx.strokeStyle = '#ff5c7a'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(x1,0); ctx.lineTo(x1,cssHeight);
+      ctx.moveTo(x2,0); ctx.lineTo(x2,cssHeight); ctx.stroke();
+      if (x2 - x1 > 34) {
+        ctx.fillStyle = '#ffc2ce'; ctx.font = 'bold 11px sans-serif';
+        ctx.fillText('削除', (x1+x2)/2 - 13, cssHeight - 6);
+      }
+    }
+    // カットした前後は暗くして、使わない部分が一目で分かるようにする
+    if (state.trimStart > 0 || state.trimEnd != null) {
+      const dur = buffer.duration;
+      ctx.fillStyle = 'rgba(11,14,23,0.72)';
+      if (state.trimStart > 0) ctx.fillRect(0, 0, (state.trimStart/dur)*cssWidth, cssHeight);
+      if (state.trimEnd != null) {
+        const x2 = (state.trimEnd/dur)*cssWidth;
+        ctx.fillRect(x2, 0, cssWidth - x2, cssHeight);
+      }
     }
     timeLabels.innerHTML = '';
     for (let i=0;i<=4;i++) {
@@ -2236,7 +2511,14 @@ class PitchShifter {
   function scheduleWaveRedraw() {
     clearTimeout(redrawTimer);
     redrawTimer = setTimeout(() => {
-      if (state.audioBuffer && !mainUI.classList.contains('hidden')) drawWave(state.audioBuffer);
+      if (state.audioBuffer && !mainUI.classList.contains('hidden')) {
+        drawWave(state.audioBuffer);
+        // バーの塗りはピクセル指定なので、幅が変わったら引き直す
+        if (typeof setSeekFill === 'function' && state.processedBuffer) {
+          const pos = parseFloat(seekBar.value) / 1000 || 0;
+          setSeekFill(state.processedBuffer.duration > 0 ? pos / state.processedBuffer.duration : 0);
+        }
+      }
     }, 180);
   }
   window.addEventListener('resize', scheduleWaveRedraw);
@@ -2253,11 +2535,13 @@ class PitchShifter {
     regionDir = btn.dataset.dir;
     [...regionToggle.children].forEach(b => b.classList.toggle('active', b===btn));
     updateRegionPreview();
+    saveSetting({ regionDir: regionDir });
   });
   regionPct.addEventListener('input', () => {
     regionPctVal.textContent = regionPct.value + '%';
     updateRegionPreview();
     syncPresets('region');
+    saveSetting({ regionPct: parseInt(regionPct.value, 10) });
   });
 
   globalToggle.addEventListener('click', (e) => {
@@ -2265,13 +2549,242 @@ class PitchShifter {
     globalDir = btn.dataset.dir;
     [...globalToggle.children].forEach(b => b.classList.toggle('active', b===btn));
     updateGlobalLabel();
+    saveSetting({ globalDir: globalDir });
   });
-  globalPct.addEventListener('input', updateGlobalLabel);
+  globalPct.addEventListener('input', () => {
+    updateGlobalLabel();
+    saveSetting({ globalPct: parseInt(globalPct.value, 10) });
+  });
   function updateGlobalLabel() {
     updateGlobalPreview();
     syncPresets('global');
     globalLabel.textContent = `全体を ${globalPct.value}% ${globalDir==='slow'?'遅く':'速く'}する`;
   }
+
+  // ---------- 区間の位置を細かく決める ----------
+  // 波形タップは1ピクセルが0.5秒以上あって粗いので、
+  // (1)再生しながら位置を拾う (2)0.1秒ずつ動かす の2つを用意する。
+  const timeInputs = {
+    start: startInput, end: endInput,
+    trimStart: el('trimStartInput'), trimEnd: el('trimEndInput')
+  };
+  function inputFor(which) { return timeInputs[which]; }
+  function isTrimField(which) { return which === 'trimStart' || which === 'trimEnd'; }
+
+  function applyTimeChange(which, sec) {
+    const buf = state.audioBuffer;
+    if (!buf) return;
+    const v = Math.max(0, Math.min(buf.duration, sec));
+    setTimeVal(inputFor(which), v);
+    if (isTrimField(which)) {
+      updateTrimPreview();
+    } else {
+      // 次にタップした時の挙動が自然になるよう、選択の順番も合わせる
+      state.selecting = (which === 'start') ? 'end' : 'start';
+      updateTapHint();
+      drawWave(buf);
+      updateRegionPreview();
+    }
+    return v;
+  }
+
+  // 再生位置から拾う(すでに適用済みの変更があっても元の曲の時刻に直す)
+  function setCueFromPlayhead(which) {
+    if (!state.audioBuffer) return;
+    const tProc = (playState === 'stopped')
+      ? (parseFloat(seekBar.value) / 1000 || 0)
+      : currentPlayPosition();
+    const v = applyTimeChange(which, processedToOriginal(tProc));
+    const names = { start: '開始', end: '終了', trimStart: '曲の始まり', trimEnd: '曲の終わり' };
+    showToast(names[which] + 'を ' + fmtTime(v) + ' にしました');
+  }
+  document.querySelectorAll('[data-cue]').forEach(function (btn) {
+    onSafeTap(btn, function () { setCueFromPlayhead(btn.dataset.cue); });
+  });
+
+  // 0.1秒ずつ動かす。押しっぱなしで連続して動く。
+  function nudgeTime(which, delta) {
+    const cur = getTimeVal(inputFor(which));
+    const base = isNaN(cur) ? 0 : cur;
+    applyTimeChange(which, Math.round((base + delta) * 10) / 10);
+  }
+  document.querySelectorAll('[data-nudge]').forEach(function (btn) {
+    const which = btn.dataset.nudge, delta = parseFloat(btn.dataset.d);
+    let holdTimer = null, repeatTimer = null;
+    function stop() { clearTimeout(holdTimer); clearInterval(repeatTimer); holdTimer = repeatTimer = null; }
+    btn.addEventListener('pointerdown', function (e) {
+      if (!e.isPrimary || inGesture()) return;
+      nudgeTime(which, delta);
+      holdTimer = setTimeout(function () {
+        repeatTimer = setInterval(function () { nudgeTime(which, delta); }, 90);
+      }, 420);
+    });
+    ['pointerup','pointercancel','pointerleave'].forEach(function (ev) {
+      btn.addEventListener(ev, stop);
+    });
+    // clickでの二重発火を防ぐ
+    btn.addEventListener('click', function (e) { e.preventDefault(); });
+  });
+
+  // ---------- 前後のカット・フェードのUI ----------
+  const trimHead = el('trimHead'), trimSection = el('trimSection'), trimChev = el('trimChev');
+  const trimStartInput = el('trimStartInput'), trimEndInput = el('trimEndInput');
+  const fadeInSlider = el('fadeInSlider'), fadeOutSlider = el('fadeOutSlider');
+  const fadeInVal = el('fadeInVal'), fadeOutVal = el('fadeOutVal');
+
+  onSafeTap(trimHead, () => {
+    const open = trimSection.classList.toggle('hidden');
+    trimHead.classList.toggle('on', !open);
+    trimChev.textContent = open ? '開く ▼' : '閉じる ▲';
+    if (!open) updateTrimPreview();
+  });
+
+  // スライダーは0.1秒刻み(0〜10秒)
+  function fadeSecOf(slider) { return parseInt(slider.value, 10) / 10; }
+  function updateFadeLabels() {
+    fadeInVal.textContent = fadeSecOf(fadeInSlider).toFixed(1) + '秒';
+    fadeOutVal.textContent = fadeSecOf(fadeOutSlider).toFixed(1) + '秒';
+  }
+  [fadeInSlider, fadeOutSlider].forEach(s => s.addEventListener('input', () => {
+    updateFadeLabels(); updateTrimPreview();
+  }));
+  [trimStartInput, trimEndInput].forEach(i => i.addEventListener('change', () => {
+    normalizeTimeInput(i); updateTrimPreview();
+  }));
+
+  // 入力欄の内容から、カット後の長さを見積もる
+  function trimCandidate() {
+    const buf = state.audioBuffer;
+    if (!buf) return null;
+    let a = getTimeVal(trimStartInput); if (isNaN(a)) a = 0;
+    let b = getTimeVal(trimEndInput);   if (isNaN(b)) b = buf.duration;
+    a = Math.max(0, Math.min(buf.duration, a));
+    b = Math.max(0, Math.min(buf.duration, b));
+    return { a, b, fadeIn: fadeSecOf(fadeInSlider), fadeOut: fadeSecOf(fadeOutSlider) };
+  }
+
+  function updateTrimPreview() {
+    const box = el('trimPreview');
+    if (!box) return;
+    const buf = state.audioBuffer;
+    const c = trimCandidate();
+    if (!buf || !c) { box.innerHTML = ''; return; }
+    const sr = buf.sampleRate;
+    const nowTotal = projectedLength(state.edits, state.globalEdit, buf.length, sr) / sr;
+    if (c.b <= c.a) {
+      box.innerHTML = '<div class="warn">「ここまで」が「ここから」より後になるように指定してください</div>';
+      return;
+    }
+    // カット後の長さ = テンポ変更後の時間軸での差
+    const after = Math.max(0, originalToTempo(c.b) - originalToTempo(c.a));
+    let html = lenRow('曲全体', nowTotal, after);
+    const cutHead = c.a > 0.001, cutTail = c.b < buf.duration - 0.001;
+    const notes = [];
+    if (cutHead) notes.push('前を ' + fmtTime(c.a) + ' ぶんカット');
+    if (cutTail) notes.push('後ろを ' + fmtTime(buf.duration - c.b) + ' ぶんカット');
+    if (c.fadeIn > 0) notes.push('フェードイン ' + c.fadeIn.toFixed(1) + '秒');
+    if (c.fadeOut > 0) notes.push('フェードアウト ' + c.fadeOut.toFixed(1) + '秒');
+    if (notes.length) html += '<div class="warn" style="color:#9096a8;">' + notes.join(' ／ ') + '</div>';
+    if (c.fadeIn + c.fadeOut > after) {
+      html += '<div class="warn">フェードが曲の長さを超えています。短くしてください</div>';
+    }
+    box.innerHTML = html;
+  }
+
+  onSafeTap(el('applyTrimBtn'), () => {
+    const buf = state.audioBuffer;
+    const c = trimCandidate();
+    if (!buf || !c) return;
+    if (c.b <= c.a) { showToast('「ここまで」が「ここから」より後になるように指定してください'); return; }
+    if (c.b - c.a < 0.5) { showToast('残る部分が短すぎます(0.5秒以上にしてください)'); return; }
+    if (typeof stopPlayback === 'function') stopPlayback();
+    state.trimStart = c.a;
+    state.trimEnd = (c.b >= buf.duration - 0.001) ? null : c.b;
+    state.fadeIn = c.fadeIn;
+    state.fadeOut = c.fadeOut;
+    buildFinalBuffer();
+    seekBar.max = Math.round(state.processedBuffer.duration * 1000);
+    updateSeekUI(0);
+    updatePlayExportState();
+    drawWave(buf);
+    renderAppliedList();
+    if (typeof refreshExportName === 'function') refreshExportName();
+    showToast('✓ 適用しました（長さ ' + fmtTime(state.processedBuffer.duration) + '）');
+  });
+
+  // 画面上のカット欄・フェードだけを初期状態に戻す(音の状態は触らない)
+  function resetTrimUI() {
+    trimStartInput.value = ''; trimEndInput.value = '';
+    fadeInSlider.value = 0; fadeOutSlider.value = 0;
+    updateFadeLabels();
+    trimSection.classList.add('hidden');
+    trimHead.classList.remove('on');
+    trimChev.textContent = '開く ▼';
+  }
+
+  function clearTrimFade() {
+    const buf = state.audioBuffer;
+    if (typeof stopPlayback === 'function') stopPlayback();
+    state.trimStart = 0; state.trimEnd = null;
+    state.fadeIn = 0; state.fadeOut = 0;
+    trimStartInput.value = ''; trimEndInput.value = '';
+    fadeInSlider.value = 0; fadeOutSlider.value = 0;
+    updateFadeLabels();
+    if (buf) {
+      buildFinalBuffer();
+      seekBar.max = Math.round(state.processedBuffer.duration * 1000);
+      updateSeekUI(0);
+      updatePlayExportState();
+    }
+    if (buf) drawWave(buf);
+    renderAppliedList();
+    updateTrimPreview();
+    if (typeof refreshExportName === 'function') refreshExportName();
+    showToast('カットとフェードを解除しました');
+  }
+  onSafeTap(el('clearTrimBtn'), clearTrimFade);
+
+  // ---------- 設定の記憶 ----------
+  // よく使う設定だけ端末に覚えさせる。曲ごとの内容(区間やカット位置)は覚えない。
+  // プライベートブラウズでは保存できないことがあるので、失敗しても何もしない。
+  const SETTINGS_KEY = 'mdance-tempo-settings-v1';
+  function loadSettings() {
+    try { return JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}; } catch (e) { return {}; }
+  }
+  function saveSetting(patch) {
+    try {
+      const cur = loadSettings();
+      for (const k in patch) cur[k] = patch[k];
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(cur));
+    } catch (e) { /* 保存できなくても動作には影響しない */ }
+  }
+
+  function applySavedSettings() {
+    const s = loadSettings();
+    if (s.monoMode === true) monoModeToggle.checked = true;
+    ['region','global'].forEach(function (which) {
+      const chk = document.querySelector('[data-extend="' + which + '"]');
+      const slider = (which === 'region') ? regionPct : globalPct;
+      if (s[which + 'Extend'] === true) { chk.checked = true; slider.max = 50; }
+      const dir = s[which + 'Dir'];
+      if (dir === 'slow' || dir === 'fast') {
+        if (which === 'region') {
+          regionDir = dir;
+          [...regionToggle.children].forEach(b => b.classList.toggle('active', b.dataset.dir === dir));
+        } else {
+          globalDir = dir;
+          [...globalToggle.children].forEach(b => b.classList.toggle('active', b.dataset.dir === dir));
+        }
+      }
+      const pct = parseInt(s[which + 'Pct'], 10);
+      if (!isNaN(pct) && pct >= 1 && pct <= parseInt(slider.max, 10)) slider.value = pct;
+    });
+    regionPctVal.textContent = regionPct.value + '%';
+    updateGlobalLabel();
+    syncPresets('region'); syncPresets('global');
+  }
+
+  monoModeToggle.addEventListener('change', () => saveSetting({ monoMode: monoModeToggle.checked }));
 
   // ---------- %のプリセットと範囲拡張 ----------
   // デッキのピッチフェーダーと同じ感覚で使えるよう、既定は1〜16%。
@@ -2302,6 +2815,7 @@ class PitchShifter {
       if (v > parseInt(slider.max, 10)) slider.max = 50; // 念のため
       slider.value = v;
       afterPctChange(which);
+      saveSetting(which === 'region' ? { regionPct: v } : { globalPct: v });
     });
   });
   document.querySelectorAll('[data-extend]').forEach(function (chk) {
@@ -2311,6 +2825,9 @@ class PitchShifter {
       slider.max = chk.checked ? 50 : 16;
       if (!chk.checked && parseInt(slider.value, 10) > 16) slider.value = 16;
       afterPctChange(which);
+      saveSetting(which === 'region'
+        ? { regionExtend: chk.checked, regionPct: parseInt(slider.value, 10) }
+        : { globalExtend: chk.checked, globalPct: parseInt(slider.value, 10) });
       if (chk.checked) showToast('16%を超える変更は、音が不自然になることがあります', 5000);
     });
   });
@@ -2324,7 +2841,40 @@ class PitchShifter {
     if (s >= songDur) { showToast('開始位置が曲の長さを超えています'); return; }
     if (e > songDur) { e = songDur; setTimeVal(endInput, e); showToast('終了位置を曲の終わり(' + fmtTime(e) + ')に合わせました'); }
     if (e - s < 0.3) { showToast('区間が短すぎます(0.3秒以上にしてください)'); return; }
+    const ov = findOverlap(s, e);
+    if (ov) { showToast('「' + describeEdit(ov) + '」と重なっています。先にその変更を ✕ で消してください', 6000); return; }
     addRegionEdit(s, e, regionDir, parseInt(regionPct.value));
+  });
+
+  // すでにある変更と重なっていたら、その変更を返す(重なりは音が壊れるので受け付けない)
+  function findOverlap(s, e) {
+    for (let i=0;i<state.edits.length;i++) {
+      const ed = state.edits[i];
+      if (s < ed.end - 0.001 && e > ed.start + 0.001) return ed;
+    }
+    return null;
+  }
+  function describeEdit(ed) {
+    return fmtTime(ed.start) + '〜' + fmtTime(ed.end) + (ed.type === 'cut' ? 'の削除' : 'の' + ed.pct + '%' + (ed.dir==='slow'?'遅く':'速く'));
+  }
+
+  onSafeTap(el('cutRegionBtn'), () => {
+    const buf = state.audioBuffer;
+    if (!buf) return;
+    const s = getTimeVal(startInput);
+    let e = getTimeVal(endInput);
+    if (isNaN(s) || isNaN(e) || e <= s) { showToast('削除する区間を正しく指定してください'); return; }
+    if (e > buf.duration) { e = buf.duration; setTimeVal(endInput, e); }
+    if (e - s < 0.1) { showToast('区間が短すぎます(0.1秒以上にしてください)'); return; }
+    const ov = findOverlap(s, e);
+    if (ov) { showToast('「' + describeEdit(ov) + '」と重なっています。先にその変更を ✕ で消してください', 6000); return; }
+    const rest = projectedLength(state.edits.concat([{ type:'cut', start:s, end:e }]),
+                                 state.globalEdit, buf.length, buf.sampleRate) / buf.sampleRate;
+    if (rest < 0.5) { showToast('これを削除すると曲がほとんど残りません'); return; }
+    state.edits.push({ id: editIdCounter++, type:'cut', start:s, end:e });
+    renderAppliedList();
+    rebuildProcessedBuffer();
+    showToast('🗑 ' + fmtTime(s) + ' 〜 ' + fmtTime(e) + ' を削除しました');
   });
 
   function addRegionEdit(s, e, dir, pct) {
@@ -2342,17 +2892,37 @@ class PitchShifter {
   function renderAppliedList() {
     updatePreviews();
     appliedList.innerHTML = '';
-    if (state.edits.length === 0 && !state.globalEdit) {
+    if (!hasAnyEdit()) {
       const note = document.createElement('div');
       note.className = 'empty-list-note';
       note.textContent = 'まだ変更はありません';
       appliedList.appendChild(note);
       return;
     }
+    // カット・フェードの状態を1行で表示(✕で解除できる)
+    if (state.trimStart > 0 || state.trimEnd != null || state.fadeIn > 0 || state.fadeOut > 0) {
+      const parts = [];
+      if (state.trimStart > 0 || state.trimEnd != null) {
+        parts.push(fmtTime(state.trimStart) + ' 〜 ' +
+          fmtTime(state.trimEnd != null ? state.trimEnd : state.audioBuffer.duration) + ' を使う');
+      }
+      if (state.fadeIn > 0) parts.push('フェードイン' + state.fadeIn.toFixed(1) + '秒');
+      if (state.fadeOut > 0) parts.push('フェードアウト' + state.fadeOut.toFixed(1) + '秒');
+      const chip = document.createElement('div');
+      chip.className = 'chip';
+      chip.innerHTML = '<span class="txt">✄ <b>' + parts.join(' ／ ') + '</b></span>';
+      const x = document.createElement('button');
+      x.className = 'x'; x.textContent = '✕';
+      x.addEventListener('click', () => { clearTrimFade(); });
+      chip.appendChild(x);
+      appliedList.appendChild(chip);
+    }
     state.edits.forEach(ed => {
       const chip = document.createElement('div');
       chip.className = 'chip';
-      chip.innerHTML = `<span class="txt">${fmtTime(ed.start)} – ${fmtTime(ed.end)} を <b>${ed.pct}%${ed.dir==='slow'?'遅く':'速く'}</b></span>`;
+      chip.innerHTML = (ed.type === 'cut')
+        ? `<span class="txt">🗑 ${fmtTime(ed.start)} – ${fmtTime(ed.end)} を <b>削除</b></span>`
+        : `<span class="txt">${fmtTime(ed.start)} – ${fmtTime(ed.end)} を <b>${ed.pct}%${ed.dir==='slow'?'遅く':'速く'}</b></span>`;
       const x = document.createElement('button');
       x.className = 'x'; x.textContent = '✕';
       x.addEventListener('click', () => {
@@ -2478,7 +3048,10 @@ class PitchShifter {
         var s = Math.max(0, Math.round(ed.start * sampleRate));
         var en = Math.min(totalLen, Math.round(ed.end * sampleRate));
         if (s > cursor) segments.push({ s: cursor, e: s, speed: 1 });
-        segments.push({ s: s, e: en, speed: computeSpeed(ed.dir, ed.pct) });
+        // 前の区間と重なっている分は捨てる(同じ音が2回出ないように)
+        s = Math.max(s, cursor);
+        // 削除する区間は、単に出力しない(前後は繋ぎ目のクロスフェードで自然に繋がる)
+        if (en > s && ed.type !== 'cut') segments.push({ s: s, e: en, speed: computeSpeed(ed.dir, ed.pct) });
         cursor = Math.max(cursor, en);
       }
       if (cursor < totalLen) segments.push({ s: cursor, e: totalLen, speed: 1 });
@@ -2601,7 +3174,8 @@ class PitchShifter {
     const myGen = renderGeneration;
     if (typeof stopPlayback === 'function') stopPlayback();
     if (state.edits.length === 0 && !state.globalEdit) {
-      state.processedBuffer = state.audioBuffer;
+      state.tempoBuffer = state.audioBuffer;
+      buildFinalBuffer();
       seekBar.max = Math.round(state.processedBuffer.duration * 1000);
       updateSeekUI(0);
       updatePlayExportState();
@@ -2611,13 +3185,14 @@ class PitchShifter {
     const src = state.audioBuffer;
     const channels = [];
     for (let c=0;c<src.numberOfChannels;c++) channels.push(src.getChannelData(c).slice());
-    const editsPayload = state.edits.map(({start,end,dir,pct}) => ({start,end,dir,pct}));
+    const editsPayload = state.edits.map(({start,end,dir,pct,type}) => ({start,end,dir,pct,type}));
 
     function applyResult(outCh, sampleRate) {
       const buf = audioCtx.createBuffer(outCh.length, outCh[0].length, sampleRate);
       for (let c=0;c<outCh.length;c++) buf.copyToChannel(outCh[c], c);
-      state.processedBuffer = buf;
-      seekBar.max = Math.round(buf.duration * 1000);
+      state.tempoBuffer = buf;
+      buildFinalBuffer();
+      seekBar.max = Math.round(state.processedBuffer.duration * 1000);
       updateSeekUI(0);
       setProcessing(false);
       updatePlayExportState();
@@ -2727,8 +3302,13 @@ class PitchShifter {
   const compareBtn = el('compareBtn'), compareNote = el('compareNote');
 
   // 編集が1つでもあるときだけ、聴き比べボタンを出す
+  function hasAnyEdit() {
+    return state.edits.length > 0 || !!state.globalEdit ||
+           state.trimStart > 0 || state.trimEnd != null ||
+           state.fadeIn > 0 || state.fadeOut > 0;
+  }
   function updateCompareVisibility() {
-    const hasEdits = state.edits.length > 0 || !!state.globalEdit;
+    const hasEdits = hasAnyEdit();
     compareBtn.classList.toggle('hidden', !hasEdits || !state.processedBuffer);
     if (!hasEdits && compareOriginal) setCompare(false);
   }
@@ -2763,14 +3343,33 @@ class PitchShifter {
     return playbackOffset + (audioCtx.currentTime - sourceStartCtxTime);
   }
 
+  // 波形は「元の曲」を描いているので、再生位置もいったん元の時刻に直してから重ねる。
+  // (カットやテンポ変更で、再生中の曲と元の曲では時間軸が違うため)
+  // スライダーのつまみは、両端で内側に半分ぶん寄る。
+  // ピンクの塗りをその中心に合わせないと、端で最大14pxズレて見える。
+  const SEEK_THUMB = 28;
+  function setSeekFill(frac) {
+    const W = seekBar.clientWidth || 0;
+    if (W <= SEEK_THUMB) { seekFill.style.width = (frac * 100) + '%'; return; }
+    const f = Math.max(0, Math.min(1, frac));
+    seekFill.style.width = (SEEK_THUMB / 2 + f * (W - SEEK_THUMB)) + 'px';
+  }
+
+  function wavePercentFor(posSec) {
+    const ob = state.audioBuffer;
+    if (!ob || !ob.duration) return 0;
+    const t = processedToOriginal(posSec);
+    return Math.max(0, Math.min(100, t / ob.duration * 100));
+  }
+
   function updateSeekUI(posSec) {
     const buf = playBuffer();
     const dur = buf ? buf.duration : 0;
     const clamped = Math.max(0, Math.min(dur, posSec));
     const pct = dur > 0 ? (clamped / dur * 100) : 0;
     if (!isScrubbing) seekBar.value = Math.round(clamped * 1000);
-    seekFill.style.width = pct + '%';
-    playheadLine.style.left = pct + '%';
+    setSeekFill(dur > 0 ? clamped / dur : 0);
+    playheadLine.style.left = wavePercentFor(clamped) + '%';
     seekTimeLabel.textContent = fmtTime(clamped) + ' / ' + fmtTime(dur);
   }
 
@@ -2907,9 +3506,8 @@ class PitchShifter {
     if (!ibuf) return;
     beginScrub();
     const t = parseFloat(seekBar.value) / 1000;
-    const pct = (t / ibuf.duration * 100);
-    playheadLine.style.left = pct + '%';
-    seekFill.style.width = pct + '%';
+    playheadLine.style.left = wavePercentFor(t) + '%';
+    setSeekFill(t / ibuf.duration);
     seekTimeLabel.textContent = fmtTime(t) + ' / ' + fmtTime(ibuf.duration);
     playScrubGrain(t); // バーの動きに合わせて音も進む/戻る
   });
@@ -2941,8 +3539,13 @@ class PitchShifter {
     refreshExportName();
     exportOverlay.classList.add('show');
   });
-  el('exportCloseBtn').addEventListener('click', () => exportOverlay.classList.remove('show'));
-  exportOverlay.addEventListener('click', (e) => { if (e.target === exportOverlay) exportOverlay.classList.remove('show'); });
+  el('exportCloseBtn').addEventListener('click', () => {
+    if (exporting) { showToast('変換中です。終わるまでお待ちください'); return; }
+    exportOverlay.classList.remove('show');
+  });
+  exportOverlay.addEventListener('click', (e) => {
+    if (e.target === exportOverlay && !exporting) exportOverlay.classList.remove('show');
+  });
 
   function downloadBlob(blob, filename) {
     const url = URL.createObjectURL(blob);
@@ -2959,34 +3562,139 @@ class PitchShifter {
     return clean + '.' + ext;
   }
 
-  el('exportWavBtn').addEventListener('click', () => {
-    if (!state.processedBuffer) return;
-    const name = finalFileName('wav');
-    const wavBlob = encodeWAV(state.processedBuffer);
-    downloadBlob(wavBlob, name);
-    exportOverlay.classList.remove('show');
-    showToast('✓ 「' + name + '」で保存しました', 5000);
-  });
+  const exportProgressWrap = el('exportProgressWrap'), exportBar = el('exportBar');
+  let exporting = false;
 
-  el('exportMp3Btn').addEventListener('click', () => {
-    if (!state.processedBuffer) return;
-    exportProgress.classList.remove('hidden');
-    exportProgress.textContent = 'MP3に変換中...';
-    setTimeout(() => {
-      try {
-        const name = finalFileName('mp3');
-        const mp3Blob = encodeMP3(state.processedBuffer);
-        downloadBlob(mp3Blob, name);
-        exportOverlay.classList.remove('show');
-        showToast('✓ 「' + name + '」で保存しました', 5000);
-      } catch (err) {
-        console.warn('MP3 encode error:', err);
-        showToast('MP3への変換に失敗しました。WAVをお試しください。');
-      } finally {
-        exportProgress.classList.add('hidden');
+  function setExportBusy(on, text) {
+    exporting = on;
+    exportProgressWrap.classList.toggle('hidden', !on);
+    el('exportWavBtn').disabled = on;
+    el('exportMp3Btn').disabled = on;
+    exportName.disabled = on;
+    if (text) exportProgress.textContent = text;
+    if (!on) exportBar.style.width = '0%';
+  }
+  function exportProgressTo(frac, label) {
+    exportBar.style.width = Math.round(frac * 100) + '%';
+    exportProgress.textContent = label + ' ' + Math.round(frac * 100) + '%';
+  }
+
+  async function doExport(kind) {
+    if (exporting || !state.processedBuffer) return;
+    const name = finalFileName(kind);
+    const label = kind === 'wav' ? 'WAVを準備中...' : 'MP3に変換中...';
+    setExportBusy(true, label + ' 0%');
+    try {
+      const blob = kind === 'wav'
+        ? await encodeWAVAsync(state.processedBuffer, (f) => exportProgressTo(f, label))
+        : await encodeMP3Async(state.processedBuffer, (f) => exportProgressTo(f, label));
+      downloadBlob(blob, name);
+      setExportBusy(false);
+      exportOverlay.classList.remove('show');
+      showToast('✓ 「' + name + '」で保存しました', 5000);
+    } catch (err) {
+      console.warn('書き出しエラー:', err);
+      setExportBusy(false);
+      showToast(kind === 'mp3'
+        ? 'MP3への変換に失敗しました。WAVをお試しください。'
+        : '書き出しに失敗しました。もう一度お試しください。');
+    }
+  }
+
+  el('exportWavBtn').addEventListener('click', () => doExport('wav'));
+
+  el('exportMp3Btn').addEventListener('click', () => doExport('mp3'));
+
+  // 重い処理を「40msだけ進めて画面に制御を返す」を繰り返して行う。
+  // こうしないと長い曲で画面が固まり、進捗も動かない。
+  function runChunked(total, stepFn, onProgress) {
+    return new Promise(function (resolve, reject) {
+      var i = 0;
+      function tick() {
+        try {
+          var deadline = (performance && performance.now ? performance.now() : Date.now()) + 40;
+          while (i < total) {
+            i = stepFn(i);
+            var now = (performance && performance.now ? performance.now() : Date.now());
+            if (now >= deadline) break;
+          }
+        } catch (err) { reject(err); return; }
+        if (onProgress) onProgress(Math.min(1, i / total));
+        if (i < total) setTimeout(tick, 0);
+        else resolve();
       }
-    }, 50);
-  });
+      setTimeout(tick, 0);
+    });
+  }
+
+  // WAV: 中間コピーを作らず、出力バッファへ直接書く(メモリ節約にもなる)
+  function encodeWAVAsync(buffer, onProgress) {
+    var numCh = buffer.numberOfChannels, sampleRate = buffer.sampleRate;
+    var len = buffer.length;
+    var chans = [];
+    for (var c=0;c<numCh;c++) chans.push(buffer.getChannelData(c));
+    var bytesPerSample = 2, blockAlign = numCh * bytesPerSample;
+    var dataSize = len * blockAlign;
+    var arr = new ArrayBuffer(44 + dataSize);
+    var view = new DataView(arr);
+    function writeStr(o, s) { for (var i=0;i<s.length;i++) view.setUint8(o+i, s.charCodeAt(i)); }
+    writeStr(0,'RIFF'); view.setUint32(4, 36+dataSize, true); writeStr(8,'WAVE');
+    writeStr(12,'fmt '); view.setUint32(16,16,true); view.setUint16(20,1,true);
+    view.setUint16(22,numCh,true); view.setUint32(24,sampleRate,true);
+    view.setUint32(28,sampleRate*blockAlign,true); view.setUint16(32,blockAlign,true); view.setUint16(34,16,true);
+    writeStr(36,'data'); view.setUint32(40,dataSize,true);
+    var BLOCK = 8192;
+    return runChunked(len, function (i) {
+      var end = Math.min(len, i + BLOCK);
+      for (var n=i;n<end;n++) {
+        var off = 44 + n * blockAlign;
+        for (var c2=0;c2<numCh;c2++) {
+          var s = chans[c2][n];
+          s = s < -1 ? -1 : (s > 1 ? 1 : s);
+          view.setInt16(off + c2*2, s < 0 ? s*0x8000 : s*0x7FFF, true);
+        }
+      }
+      return end;
+    }, onProgress).then(function () {
+      return new Blob([arr], { type: 'audio/wav' });
+    });
+  }
+
+  // MP3: 1152フレームずつ変換。全長ぶんのInt16コピーを作らないのでメモリも軽い。
+  function encodeMP3Async(buffer, onProgress) {
+    var numCh = Math.min(2, buffer.numberOfChannels);
+    var sampleRate = buffer.sampleRate, len = buffer.length;
+    var left = buffer.getChannelData(0);
+    var right = numCh > 1 ? buffer.getChannelData(1) : left;
+    var encoder = new lamejs.Mp3Encoder(numCh, sampleRate, 160);
+    var FRAME = 1152, BLOCK = FRAME * 6;   // 1回の塊を小さくして、画面のカクつきを抑える
+    var bufL = new Int16Array(FRAME), bufR = new Int16Array(FRAME);
+    var parts = [];
+    function toI16(src, dst, from, count) {
+      for (var k=0;k<count;k++) {
+        var s = src[from+k];
+        s = s < -1 ? -1 : (s > 1 ? 1 : s);
+        dst[k] = s < 0 ? s*0x8000 : s*0x7FFF;
+      }
+    }
+    return runChunked(len, function (i) {
+      var stop = Math.min(len, i + BLOCK);
+      for (var p=i;p<stop;p+=FRAME) {
+        var count = Math.min(FRAME, len - p);
+        toI16(left, bufL, p, count);
+        var l = count === FRAME ? bufL : bufL.subarray(0, count);
+        var r = l;
+        if (numCh > 1) { toI16(right, bufR, p, count); r = count === FRAME ? bufR : bufR.subarray(0, count); }
+        var mp3 = numCh > 1 ? encoder.encodeBuffer(l, r) : encoder.encodeBuffer(l);
+        if (mp3.length > 0) parts.push(new Uint8Array(mp3));
+      }
+      return stop;
+    }, onProgress).then(function () {
+      var end = encoder.flush();
+      if (end.length > 0) parts.push(new Uint8Array(end));
+      return new Blob(parts, { type: 'audio/mp3' });
+    });
+  }
 
   function encodeWAV(buffer) {
     const numCh = buffer.numberOfChannels, sampleRate = buffer.sampleRate;
@@ -3042,6 +3750,9 @@ class PitchShifter {
     if (end.length > 0) parts.push(end);
     return new Blob(parts.map(p => new Uint8Array(p)), { type: 'audio/mp3' });
   }
+
+  // 前回使った設定を復元して起動する
+  applySavedSettings();
 
 })();
 </script>
