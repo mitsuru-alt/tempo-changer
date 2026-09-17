@@ -392,7 +392,7 @@
   <div class="header">
     <div class="brand"><span class="logo">mDANCE</span><span class="badge">FREE</span></div>
     <div style="display:flex;align-items:center;gap:8px;">
-      <span class="subtitle">テンポチェンジャー <span style="opacity:0.5;">· v39</span></span>
+      <span class="subtitle">テンポチェンジャー <span style="opacity:0.5;">· v40</span></span>
       <button class="home-btn hidden" id="homeBtn" title="曲選択に戻る">🏠</button>
       <button class="help-btn" id="helpBtn">?</button>
     </div>
@@ -432,8 +432,9 @@
         <div class="help-step">
           <div class="help-step-title">4️⃣ フェードをつけますか? 🔈</div>
           <p>区間の決め方は2️⃣3️⃣と同じです。区間を決めてから、どちらかを押してください。<br>
-          <b>🔈 フェードイン</b>…選んだ区間より<b>前は無音</b>になり、区間の中でだんだん大きくなります。曲の頭に使うと自然に始まります<br>
-          <b>🔉 フェードアウト</b>…区間の中でだんだん小さくなり、<b>後ろは無音</b>になります。曲の終わりに使うと自然に終わります🎭<br>
+          <b>🔈 フェードイン</b>…区間の中でだんだん大きくなります。<b>曲の頭</b>に使うと自然に始まります<br>
+          <b>🔉 フェードアウト</b>…区間の中でだんだん小さくなります。<b>曲の終わり</b>に使うと自然に終わります🎭<br>
+          区間の外の音量は<b>そのまま</b>です。※曲の途中にフェードインを置くと、その直前で急に音が落ちるので注意してください<br>
           波形に<b>色の帯</b>で出ます（緑=イン / オレンジ=アウト）。<b>何か所でもつけられます</b></p>
         </div>
         <div class="help-step">
@@ -630,7 +631,7 @@
           <button class="apply-btn btn-fadein" id="fadeInBtn">🔈 この区間で<br>フェードイン</button>
           <button class="apply-btn btn-fadeout" id="fadeOutBtn">🔉 この区間で<br>フェードアウト</button>
         </div>
-        <div class="step-tip">💡 <b>フェードイン</b>…選んだ区間より<b>前は無音</b>になり、区間の中でだんだん大きくなります（そこから曲が始まる感じ）<br>💡 <b>フェードアウト</b>…区間の中でだんだん小さくなり、<b>後ろは無音</b>になります</div>
+        <div class="step-tip">💡 選んだ区間の中だけ音量が変わります。<b>区間の外はそのまま</b>です<br>🔈 <b>フェードイン</b>…区間の中でだんだん大きく（曲の頭に使うと自然に始まります）<br>🔉 <b>フェードアウト</b>…区間の中でだんだん小さく（曲の終わりに使うと自然に終わります）</div>
       </div>
       <div class="step-nav">
         <button class="nav-back" data-goto="3">◀ 戻る</button>
@@ -2130,8 +2131,8 @@ class PitchShifter {
   // ---------- フェード ----------
   // テンポ変更・カットの結果(tempoBuffer)の端を薄くするだけ。やり直しは一瞬で終わる。
   // 指定した区間ごとのフェードを、音量カーブとしてまとめて作る
-  // フェードイン: 区間より前は無音 → 区間で 0→1 → 以降そのまま
-  // フェードアウト: 区間まではそのまま → 区間で 1→0 → 以降は無音
+  // フェードイン:   区間の中で 0→1。区間の外はそのまま(100%)
+  // フェードアウト: 区間の中で 1→0。区間の外はそのまま(100%)
   function buildGainCurve(len, sr) {
     var gain = new Float32Array(len);
     gain.fill(1);
@@ -2143,11 +2144,9 @@ class PitchShifter {
       b = Math.max(a + 1, Math.min(len, b));
       var span = b - a;
       if (f.dir === 'in') {
-        for (var p=0;p<a;p++) gain[p] = 0;
         for (var q=0;q<span;q++) gain[a+q] *= q / span;
       } else {
         for (var r=0;r<span;r++) gain[a+r] *= 1 - (r / span);
-        for (var s=b;s<len;s++) gain[s] = 0;
       }
     }
     return gain;
