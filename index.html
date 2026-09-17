@@ -392,7 +392,7 @@
   <div class="header">
     <div class="brand"><span class="logo">mDANCE</span><span class="badge">FREE</span></div>
     <div style="display:flex;align-items:center;gap:8px;">
-      <span class="subtitle">テンポチェンジャー <span style="opacity:0.5;">· v40</span></span>
+      <span class="subtitle">テンポチェンジャー <span style="opacity:0.5;">· v41</span></span>
       <button class="home-btn hidden" id="homeBtn" title="曲選択に戻る">🏠</button>
       <button class="help-btn" id="helpBtn">?</button>
     </div>
@@ -434,8 +434,9 @@
           <p>区間の決め方は2️⃣3️⃣と同じです。区間を決めてから、どちらかを押してください。<br>
           <b>🔈 フェードイン</b>…区間の中でだんだん大きくなります。<b>曲の頭</b>に使うと自然に始まります<br>
           <b>🔉 フェードアウト</b>…区間の中でだんだん小さくなります。<b>曲の終わり</b>に使うと自然に終わります🎭<br>
+          選んだ区間を<b>0〜100%</b>として、<b>聴いた感じが均等に</b>変わるようにしています（半分の地点で半分の音量に聞こえます）🎚️<br>
           区間の外の音量は<b>そのまま</b>です。※曲の途中にフェードインを置くと、その直前で急に音が落ちるので注意してください<br>
-          波形に<b>色の帯</b>で出ます（緑=イン / オレンジ=アウト）。<b>何か所でもつけられます</b></p>
+          波形に<b>音量の上がり方が線で</b>出ます（緑=イン / オレンジ=アウト）。<b>何か所でもつけられます</b></p>
         </div>
         <div class="help-step">
           <div class="help-step-title">5️⃣ できあがり ▶️💾</div>
@@ -631,7 +632,7 @@
           <button class="apply-btn btn-fadein" id="fadeInBtn">🔈 この区間で<br>フェードイン</button>
           <button class="apply-btn btn-fadeout" id="fadeOutBtn">🔉 この区間で<br>フェードアウト</button>
         </div>
-        <div class="step-tip">💡 選んだ区間の中だけ音量が変わります。<b>区間の外はそのまま</b>です<br>🔈 <b>フェードイン</b>…区間の中でだんだん大きく（曲の頭に使うと自然に始まります）<br>🔉 <b>フェードアウト</b>…区間の中でだんだん小さく（曲の終わりに使うと自然に終わります）</div>
+        <div class="step-tip">💡 選んだ区間を<b>0〜100%</b>として、聴いた感じが<b>均等に</b>変わります。区間の外はそのままです<br>🔈 <b>フェードイン</b>…区間の中でだんだん大きく（曲の頭に使うと自然に始まります）<br>🔉 <b>フェードアウト</b>…区間の中でだんだん小さく（曲の終わりに使うと自然に終わります）<br>波形に<b>音量の上がり方が線で</b>出るので、見たまま確かめられます📈</div>
       </div>
       <div class="step-nav">
         <button class="nav-back" data-goto="3">◀ 戻る</button>
@@ -2131,8 +2132,20 @@ class PitchShifter {
   // ---------- フェード ----------
   // テンポ変更・カットの結果(tempoBuffer)の端を薄くするだけ。やり直しは一瞬で終わる。
   // 指定した区間ごとのフェードを、音量カーブとしてまとめて作る
-  // フェードイン:   区間の中で 0→1。区間の外はそのまま(100%)
-  // フェードアウト: 区間の中で 1→0。区間の外はそのまま(100%)
+  // フェードイン:   区間の中で 0→100%。区間の外はそのまま(100%)
+  // フェードアウト: 区間の中で 100%→0。区間の外はそのまま(100%)
+  //
+  // 数値をまっすぐ上げると、耳には「最初に一気に上がって後半ほぼ変わらない」と
+  // 聞こえてしまう(人は音量を対数的に感じるため)。そこで「聴こえる大きさ」が
+  // 区間を通して均等に変わるカーブを使う。
+  // 聴感の大きさ ≒ 振幅^0.6 なので、振幅 = 進み具合^(1/0.6) とすると
+  // 聴感がちょうど直線になる。半分の地点で「半分の音量」に聞こえる。
+  var FADE_EXP = 5 / 3;   // = 1/0.6
+  function fadeGain(t) {
+    if (t <= 0) return 0;
+    if (t >= 1) return 1;
+    return Math.pow(t, FADE_EXP);
+  }
   function buildGainCurve(len, sr) {
     var gain = new Float32Array(len);
     gain.fill(1);
@@ -2144,9 +2157,9 @@ class PitchShifter {
       b = Math.max(a + 1, Math.min(len, b));
       var span = b - a;
       if (f.dir === 'in') {
-        for (var q=0;q<span;q++) gain[a+q] *= q / span;
+        for (var q=0;q<span;q++) gain[a+q] *= fadeGain(q / span);
       } else {
-        for (var r=0;r<span;r++) gain[a+r] *= 1 - (r / span);
+        for (var r=0;r<span;r++) gain[a+r] *= fadeGain(1 - (r / span));
       }
     }
     return gain;
@@ -2483,11 +2496,22 @@ class PitchShifter {
       const f = state.fades[fi];
       const dur0 = buffer.duration;
       const x1 = (f.start/dur0)*cssWidth, x2 = (f.end/dur0)*cssWidth;
-      const g = ctx.createLinearGradient(x1, 0, x2, 0);
-      if (f.dir === 'in') { g.addColorStop(0,'rgba(63,156,98,0.55)'); g.addColorStop(1,'rgba(63,156,98,0.05)'); }
-      else { g.addColorStop(0,'rgba(179,115,31,0.05)'); g.addColorStop(1,'rgba(179,115,31,0.55)'); }
-      ctx.fillStyle = g;
+      const col = f.dir === 'in' ? '99,196,138' : '219,155,71';
+      ctx.fillStyle = 'rgba(' + col + ',0.13)';
       ctx.fillRect(x1, 0, Math.max(1.5, x2-x1), cssHeight);
+      // 音量の上がり方(下がり方)を線で描く。見たままが実際のカーブ。
+      ctx.strokeStyle = 'rgba(' + col + ',0.95)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      const steps = Math.max(2, Math.round(x2 - x1));
+      for (let si=0; si<=steps; si++) {
+        const tt = si / steps;
+        const gv = fadeGain(f.dir === 'in' ? tt : 1 - tt);
+        const px = x1 + (x2 - x1) * tt;
+        const py = cssHeight - 3 - gv * (cssHeight - 8);
+        if (si === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      }
+      ctx.stroke();
       if (x2 - x1 > 30) {
         ctx.fillStyle = f.dir === 'in' ? '#b6f0cb' : '#ffd9ae';
         ctx.font = 'bold 11px sans-serif';
