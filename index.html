@@ -132,6 +132,18 @@
     font-size: 15px; font-weight: 700; text-align: center; font-variant-numeric: tabular-nums;
   }
   .arrow { color: #4a5170; font-size: 14px; }
+  .pct-presets { display: flex; gap: 6px; margin-top: 12px; }
+  .pct-presets button {
+    flex: 1; min-height: 44px; border-radius: 10px;
+    border: 1px solid #2a3050; background: #0e1120; color: #cfd2dd;
+    font-size: 14px; font-weight: 800;
+  }
+  .pct-presets button.active { background: #3730a6; border-color: transparent; color: #e4e2ff; }
+  .pct-extend {
+    display: flex; align-items: center; gap: 8px; margin-top: 10px;
+    font-size: 11.5px; color: #6d738a; line-height: 1.5;
+  }
+  .pct-extend input { width: 20px; height: 20px; flex-shrink: 0; }
   .len-preview {
     margin-top: 12px; padding: 11px 13px; border-radius: 12px;
     background: #12131f; border: 1px solid #232840;
@@ -322,7 +334,7 @@
   <div class="header">
     <div class="brand"><span class="logo">mDANCE</span><span class="badge">FREE</span></div>
     <div style="display:flex;align-items:center;gap:8px;">
-      <span class="subtitle">テンポチェンジャー <span style="opacity:0.5;">· v28</span></span>
+      <span class="subtitle">テンポチェンジャー <span style="opacity:0.5;">· v30</span></span>
       <button class="home-btn hidden" id="homeBtn" title="曲選択に戻る">🏠</button>
       <button class="help-btn" id="helpBtn">?</button>
     </div>
@@ -464,9 +476,15 @@
             <button class="active slow" data-dir="slow">遅く</button>
             <button data-dir="fast">速く</button>
           </div>
-          <div style="flex:1"><input type="range" id="regionPct" min="1" max="50" value="15"></div>
-          <div class="pct-value" id="regionPctVal">15%</div>
+          <div style="flex:1"><input type="range" id="regionPct" min="1" max="16" value="8"></div>
+          <div class="pct-value" id="regionPctVal">8%</div>
         </div>
+        <div class="pct-presets" data-presets="region">
+          <button data-v="3">3%</button><button data-v="5">5%</button>
+          <button data-v="8">8%</button><button data-v="10">10%</button><button data-v="15">15%</button>
+        </div>
+        <label class="pct-extend"><input type="checkbox" data-extend="region">
+          <span>16%より大きく変えたい(最大50%まで)</span></label>
         <div class="len-preview" id="regionPreview"></div>
         <button class="apply-btn" id="applyRegionBtn">この区間に適用</button>
       </div>
@@ -482,7 +500,13 @@
         <div class="global-row">
           <span class="name" id="globalLabel">全体を 3% 遅くする</span>
         </div>
-        <input type="range" id="globalPct" min="0" max="30" value="3">
+        <input type="range" id="globalPct" min="1" max="16" value="5">
+        <div class="pct-presets" data-presets="global">
+          <button data-v="3">3%</button><button data-v="5">5%</button>
+          <button data-v="8">8%</button><button data-v="10">10%</button><button data-v="15">15%</button>
+        </div>
+        <label class="pct-extend"><input type="checkbox" data-extend="global">
+          <span>16%より大きく変えたい(最大50%まで)</span></label>
         <div class="len-preview" id="globalPreview"></div>
         <button class="apply-btn" id="applyGlobalBtn">全体に適用</button>
       </div>
@@ -2233,6 +2257,7 @@ class PitchShifter {
   regionPct.addEventListener('input', () => {
     regionPctVal.textContent = regionPct.value + '%';
     updateRegionPreview();
+    syncPresets('region');
   });
 
   globalToggle.addEventListener('click', (e) => {
@@ -2244,8 +2269,51 @@ class PitchShifter {
   globalPct.addEventListener('input', updateGlobalLabel);
   function updateGlobalLabel() {
     updateGlobalPreview();
+    syncPresets('global');
     globalLabel.textContent = `全体を ${globalPct.value}% ${globalDir==='slow'?'遅く':'速く'}する`;
   }
+
+  // ---------- %のプリセットと範囲拡張 ----------
+  // デッキのピッチフェーダーと同じ感覚で使えるよう、既定は1〜16%。
+  // よく使う値はワンタップで、それ以上が必要な時だけ範囲を広げる。
+  function pctSliderFor(which) { return which === 'region' ? regionPct : globalPct; }
+  function afterPctChange(which) {
+    if (which === 'region') {
+      regionPctVal.textContent = regionPct.value + '%';
+      updateRegionPreview();
+    } else {
+      updateGlobalLabel();
+    }
+    syncPresets(which);
+  }
+  function syncPresets(which) {
+    const v = parseInt(pctSliderFor(which).value, 10);
+    document.querySelectorAll('[data-presets="' + which + '"] button').forEach(function (b) {
+      b.classList.toggle('active', parseInt(b.dataset.v, 10) === v);
+    });
+  }
+  document.querySelectorAll('[data-presets]').forEach(function (box) {
+    const which = box.dataset.presets;
+    box.addEventListener('click', function (e) {
+      const btn = e.target.closest('button');
+      if (!btn || inGesture()) return;
+      const slider = pctSliderFor(which);
+      const v = parseInt(btn.dataset.v, 10);
+      if (v > parseInt(slider.max, 10)) slider.max = 50; // 念のため
+      slider.value = v;
+      afterPctChange(which);
+    });
+  });
+  document.querySelectorAll('[data-extend]').forEach(function (chk) {
+    const which = chk.dataset.extend;
+    chk.addEventListener('change', function () {
+      const slider = pctSliderFor(which);
+      slider.max = chk.checked ? 50 : 16;
+      if (!chk.checked && parseInt(slider.value, 10) > 16) slider.value = 16;
+      afterPctChange(which);
+      if (chk.checked) showToast('16%を超える変更は、音が不自然になることがあります', 5000);
+    });
+  });
 
   // ---------- 区間の適用 ----------
   applyRegionBtn.addEventListener('click', () => {
