@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>mDANCE テンポチェンジャー</title>
 <meta name="theme-color" content="#0b0e17">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -33,18 +33,36 @@
   .badge { font-size: 10px; font-weight: 700; color: #4ade80; border: 1px solid #4ade80; border-radius: 999px; padding: 2px 8px; }
   .subtitle { font-size: 11px; color: #6d738a; }
 
-  .empty-state { padding: 60px 24px; text-align: center; }
-  .empty-state .icon { font-size: 44px; margin-bottom: 14px; }
-  .empty-state h2 { font-size: 19px; margin-bottom: 8px; }
-  .empty-state p { font-size: 13px; color: #9096a8; margin-bottom: 20px; }
-  .file-btn {
-    display: inline-flex; align-items: center; gap: 8px;
-    background: linear-gradient(90deg, #ff6ec7, #a78bfa); color: #12081a;
-    border: none; border-radius: 14px; padding: 13px 26px; font-weight: 800; font-size: 14.5px;
+  .empty-state { padding: 46px 24px; text-align: center; }
+  .empty-state .icon { font-size: 48px; margin-bottom: 14px; }
+  .empty-state h2 { font-size: 21px; margin-bottom: 8px; }
+  .empty-state p { font-size: 13px; color: #9096a8; margin-bottom: 22px; }
+  .step-badge {
+    display: inline-block; background: #232840; color: #ffb3e2;
+    font-size: 11.5px; font-weight: 800; letter-spacing: 0.04em;
+    padding: 5px 12px; border-radius: 999px; margin-bottom: 10px;
   }
+  .file-btn {
+    display: flex; align-items: center; gap: 14px; text-align: left;
+    width: 100%; max-width: 320px; margin: 0 auto; box-sizing: border-box;
+    background: linear-gradient(90deg, #ff6ec7, #a78bfa); color: #12081a;
+    border: none; border-radius: 18px; padding: 20px 22px;
+    box-shadow: 0 8px 24px rgba(255,110,199,0.30);
+    animation: filePulse 2.4s ease-in-out infinite;
+  }
+  .file-btn:active { transform: scale(0.97); animation: none; }
+  .file-btn-emoji { font-size: 32px; line-height: 1; flex-shrink: 0; }
+  .file-btn-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .file-btn-text b { font-size: 19px; font-weight: 900; letter-spacing: 0.01em; }
+  .file-btn-text small { font-size: 11.5px; font-weight: 700; opacity: 0.68; }
+  @keyframes filePulse {
+    0%, 100% { box-shadow: 0 8px 24px rgba(255,110,199,0.30); }
+    50%      { box-shadow: 0 8px 30px rgba(255,110,199,0.55); }
+  }
+  @media (prefers-reduced-motion: reduce) { .file-btn { animation: none; } }
 
   .card { margin: 16px 18px; background: #151827; border: 1px solid #232840; border-radius: 16px; padding: 14px; }
-  .section-label { font-size: 13px; font-weight: 700; margin: 18px 18px 8px; color: #cfd2dd; display:flex; align-items:center; gap:6px; }
+  .section-label { font-size: 16.5px; font-weight: 800; margin: 20px 18px 10px; color: #f0f1f6; display:flex; align-items:center; gap:7px; letter-spacing: 0.01em; }
 
   .wave-wrap { position: relative; }
   .playhead-line {
@@ -80,7 +98,7 @@
     color: #9096a8; margin-top: 2px; font-variant-numeric: tabular-nums;
   }
   .mode-placeholder {
-    margin: 0 18px 16px; font-size: 12.5px; color: #6d738a; text-align: center;
+    margin: 0 18px 16px; font-size: 14px; color: #9096a8; text-align: center;
     padding: 14px; border: 1px dashed #232840; border-radius: 12px;
   }
   .tap-flash {
@@ -89,9 +107,10 @@
     animation: tapFlash 0.4s ease-out forwards;
   }
   @keyframes tapFlash { from { opacity: 0.9; transform: scaleY(1); } to { opacity: 0; transform: scaleY(1.15); } }
-  canvas#wave { width: 100%; height: 84px; display: block; border-radius: 8px; }
+  canvas#wave { width: 100%; height: 220px; display: block; border-radius: 8px; touch-action: pan-y pinch-zoom; }
   .time-labels { display: flex; justify-content: space-between; font-size: 10.5px; color: #6d738a; margin-top: 8px; }
-  .tap-hint { font-size: 11.5px; color: #9096a8; margin-top: 8px; text-align: center; }
+  .tap-hint { font-size: 13px; color: #cfd2dd; margin-top: 10px; text-align: center; background: #12131f; border: 1px solid #232840; border-radius: 10px; padding: 9px 10px; }
+  .tap-hint b { color: #ff8ad1; }
 
   .time-inputs { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
   .time-box { flex: 1; background: #0e1120; border: 1px solid #2a3050; border-radius: 10px; padding: 8px 10px; text-align: center; }
@@ -206,6 +225,7 @@
   .help-step p { font-size: 12.5px; color: #b8bdcf; line-height: 1.8; }
   .help-step p b { color: #ff8ad1; }
   .help-caution p { color: #b8a878; }
+  .home-btn.armed { width: auto; padding: 0 10px; border-radius: 999px; background: #b34700; color: #ffd9b0; font-size: 11px; font-weight: 800; }
   .home-btn {
     width: 30px; height: 30px; border-radius: 50%;
     border: 1px solid #2a3050; background: #151827; color: #9096a8;
@@ -228,6 +248,11 @@
     font-size: 13px; font-weight: 700;
   }
   .share-btn.copied { background: #22c55e; color: #06210f; border-color: transparent; }
+  .offline-badge {
+    width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 12px;
+    background: #0f2419; border: 1px solid #1f5137; color: #7de3a8;
+    font-size: 12px; font-weight: 700; line-height: 1.5; text-align: center;
+  }
   .export-choice {
     display: block; width: 100%; text-align: left;
     background: #0e1120; border: 1px solid #2a3050; border-radius: 14px;
@@ -237,12 +262,25 @@
   .export-choice-title { font-size: 14px; font-weight: 800; margin-bottom: 4px; }
   .export-choice-sub { font-size: 11.5px; color: #9096a8; }
   .export-progress { text-align: center; font-size: 12.5px; color: #7de3a8; padding: 10px 0; }
+  .export-name-box {
+    background: #0e1120; border: 1px solid #2a3050; border-radius: 14px;
+    padding: 12px 14px; margin-bottom: 12px;
+  }
+  .export-name-box .lbl { font-size: 11px; color: #6d738a; margin-bottom: 7px; font-weight: 700; }
+  .export-name-field { display: flex; align-items: center; gap: 6px; }
+  .export-name-field input {
+    flex: 1; min-width: 0; background: #151827; border: 1px solid #2a3050; border-radius: 10px;
+    color: #e8e9ee; font-size: 15px; font-weight: 700; padding: 10px 12px;
+  }
+  .export-name-field .ext { font-size: 13px; color: #6d738a; font-weight: 700; flex-shrink: 0; }
+  .export-name-hint { font-size: 11px; color: #6d738a; margin-top: 7px; line-height: 1.5; }
 
   /* ---------- 横向き(landscape)対応 ---------- */
   @media (orientation: landscape) {
     .app { max-width: 680px; }
     .empty-state { padding: 24px 24px; }
     .card { padding: 10px 14px; margin: 10px 18px; }
+    canvas#wave { height: 130px; }
     .section-label { margin: 10px 18px 6px; }
     .mode-placeholder { margin: 0 18px 10px; padding: 10px; }
     .copyright-note { margin: 0 18px 84px; }
@@ -261,7 +299,7 @@
   <div class="header">
     <div class="brand"><span class="logo">mDANCE</span><span class="badge">FREE</span></div>
     <div style="display:flex;align-items:center;gap:8px;">
-      <span class="subtitle">テンポチェンジャー <span style="opacity:0.5;">· v20</span></span>
+      <span class="subtitle">テンポチェンジャー <span style="opacity:0.5;">· v27</span></span>
       <button class="home-btn hidden" id="homeBtn" title="曲選択に戻る">🏠</button>
       <button class="help-btn" id="helpBtn">?</button>
     </div>
@@ -284,7 +322,7 @@
         </div>
         <div class="help-step">
           <div class="help-step-title">3️⃣-✂️ 区間だけ変える場合</div>
-          <p>👆 波形を<b>1回タップ=開始位置</b>(緑の線)、<b>もう1回タップ=終了位置</b>(ピンクの線)。秒数を直接入力してもOK✏️<br>そのあと「遅く/速く」と%を決めて「この区間に適用」をタップ!複数の区間を重ねてもOKです🎯</p>
+          <p>👆 波形を<b>1回タップ=開始位置</b>(緑の線)、<b>もう1回タップ=終了位置</b>(ピンクの線)。時間を直接入力してもOK(<b>0:12.5</b> のように)✏️<br>そのあと「遅く/速く」と%を決めて「この区間に適用」をタップ!複数の区間を重ねてもOKです🎯</p>
         </div>
         <div class="help-step">
           <div class="help-step-title">3️⃣-🌍 全体を変える場合</div>
@@ -292,7 +330,11 @@
         </div>
         <div class="help-step">
           <div class="help-step-title">4️⃣ 確認して保存 ▶️💾</div>
-          <p>「▶ 再生確認」で聴いてみて、良ければ「💾 書き出し」から <b>WAV(高音質)</b>か<b>MP3(軽量・約1/10)</b>を選んで保存📥<br>白いバーをドラッグすると好きな場所から聴けます🎧</p>
+          <p>「▶ 再生確認」で聴いてみて、良ければ「💾 書き出し」から <b>WAV(高音質)</b>か<b>MP3(軽量・約1/10)</b>を選んで保存📥<br>白いバーをドラッグすると、<b>ドラッグ中もその場所の音が鳴る</b>ので、耳で頭出しできます🎧 離すとそこから続けて再生されます</p>
+        </div>
+        <div class="help-step">
+          <div class="help-step-title">✈️ 電波がなくても使えます</div>
+          <p>一度このページを開いておけば、<b>次からは電波がない場所でも起動できます</b>📶 スタジオや劇場で通信が不安定でも大丈夫。「📱 ホーム画面にアプリとして追加」しておくとさらに安心です</p>
         </div>
         <div class="help-step">
           <div class="help-step-title">💡 便利ワザ</div>
@@ -309,8 +351,16 @@
   <div id="emptyState" class="empty-state">
     <div class="icon">🎵</div>
     <h2>曲を読み込もう！</h2>
-    <p>MP3・WAV・M4A などOK<br>秒数を指定してテンポだけ変更できます</p>
-    <label class="file-btn">📂 ファイルを選ぶ<input type="file" id="fileInput" accept="audio/*,.mp3,.wav,.m4a,.aac,.caf,.aiff,.flac"></label>
+    <p>MP3・WAV・M4A などOK<br>音の高さはそのままで、テンポだけ変えられます</p>
+    <div class="step-badge">STEP 1</div>
+    <label class="file-btn">
+      <span class="file-btn-emoji">📂</span>
+      <span class="file-btn-text">
+        <b>曲のファイルを選ぶ</b>
+        <small>ここをタップしてください</small>
+      </span>
+      <input type="file" id="fileInput" accept="audio/*,.mp3,.wav,.m4a,.aac,.caf,.aiff,.flac">
+    </label>
 
     <div class="empty-extras">
       <label class="mono-toggle-row">
@@ -319,6 +369,7 @@
       </label>
       <button class="share-btn" id="shareBtn">📤 このアプリを友達に共有</button>
       <button class="share-btn" id="a2hsBtn">📱 ホーム画面にアプリとして追加</button>
+      <div class="offline-badge hidden" id="offlineBadge">✈️ オフライン対応ずみ<br>電波がない場所でもこのまま使えます</div>
     </div>
   </div>
 
@@ -358,29 +409,29 @@
         <input type="range" id="seekBar" min="0" max="1000" value="0" step="10">
       </div>
       <div class="seek-time" id="seekTimeLabel">0:00.0 / 0:00.0</div>
-      <div class="tap-hint hidden" id="tapHint">👆 波形をタップして<b id="tapHintTarget">開始位置</b>を設定</div>
+      <div class="tap-hint hidden" id="tapHint">👆 上の波形をタップして <b id="tapHintTarget">開始位置</b> を決めてください</div>
       <button class="apply-btn hidden" id="resetSelectionBtn" style="margin-top:8px;background:#232840;color:#9096a8;">選択をやり直す</button>
     </div>
 
-    <div class="section-label">🎛️ どちらを変更する?</div>
+    <div class="section-label">🎛️ STEP 2 · どちらを変更しますか?</div>
     <div class="mode-toggle" id="modeToggle">
       <button data-mode="region">✂️ 区間を指定して変更</button>
       <button data-mode="global">🌍 曲全体を変更</button>
     </div>
-    <div class="mode-placeholder" id="modePlaceholder">👆 まずはどちらを変更するか選んでください</div>
+    <div class="mode-placeholder" id="modePlaceholder">👆 上の2つから、どちらか一方をタップして選んでください</div>
 
     <div id="regionSection" class="hidden">
-      <div class="section-label">✂️ 区間だけ変更</div>
+      <div class="section-label">✂️ STEP 3 · 区間だけ変更</div>
       <div class="card">
         <div class="time-inputs">
           <div class="time-box">
-            <div class="lbl">開始(秒)</div>
-            <input type="number" id="startInput" step="0.1" min="0" placeholder="—">
+            <div class="lbl">開始</div>
+            <input type="text" id="startInput" inputmode="text" autocomplete="off" placeholder="0:00.0">
           </div>
           <span class="arrow">→</span>
           <div class="time-box">
-            <div class="lbl">終了(秒)</div>
-            <input type="number" id="endInput" step="0.1" min="0" placeholder="—">
+            <div class="lbl">終了</div>
+            <input type="text" id="endInput" inputmode="text" autocomplete="off" placeholder="0:00.0">
           </div>
         </div>
         <div class="pct-row">
@@ -396,7 +447,7 @@
     </div>
 
     <div id="globalSection" class="hidden">
-      <div class="section-label">🌍 曲全体を変更</div>
+      <div class="section-label">🌍 STEP 3 · 曲全体を変更</div>
       <div class="card">
         <div class="global-toggle" id="globalToggle">
           <button class="active slow" data-dir="slow">遅く</button>
@@ -432,6 +483,14 @@
       <button class="help-close" id="exportCloseBtn">✕</button>
     </div>
     <div class="help-body" style="padding-bottom: calc(20px + env(safe-area-inset-bottom));">
+      <div class="export-name-box">
+        <div class="lbl">📝 ファイル名</div>
+        <div class="export-name-field">
+          <input type="text" id="exportName" autocomplete="off" spellcheck="false" placeholder="ファイル名">
+          <span class="ext">.wav / .mp3</span>
+        </div>
+        <div class="export-name-hint">編集内容から自動でつけています。タップすれば自由に変えられます✏️</div>
+      </div>
       <button class="export-choice" id="exportWavBtn">
         <div class="export-choice-title">🎼 WAV(高音質)</div>
         <div class="export-choice-sub">音質そのまま。ファイルは大きめ(3分の曲で約30MB)</div>
@@ -1585,6 +1644,73 @@ class PitchShifter {
   });
   const emptyState = el('emptyState'), mainUI = el('mainUI'), footerBar = el('footerBar');
 
+  // ---------- オフライン対応 ----------
+  // 一度ネットで開けば、以降は電波がなくても起動できるようにする。
+  // (音声処理は元々すべて端末内で完結しているので、通信は起動時だけ)
+  (function registerServiceWorker() {
+    if (!('serviceWorker' in navigator)) return;
+    if (location.protocol === 'file:') return; // ファイルを直接開いた場合は使えない
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('./sw.js')
+        .then(function () { return navigator.serviceWorker.ready; })
+        .then(function () {
+          const badge = el('offlineBadge');
+          if (badge) badge.classList.remove('hidden');
+        })
+        .catch(function () { /* プレビュー環境などでは登録できないが、動作に支障はない */ });
+    });
+  })();
+
+  // ---------- ピンチ操作の巻き添えタップ対策 ----------
+  // 2本指ジェスチャー中/直後は、ブラウザが合成するclickを無視する。
+  // ズームを戻した瞬間にホームへ飛んでしまう事故を防ぐため。
+  let lastMultiTouchAt = 0;
+  let multiTouchActive = false; // 今まさに2本指が触れているか
+  // ジェスチャー中、および全部の指が離れてから少しの間だけ true
+  function inGesture() { return multiTouchActive || (Date.now() - lastMultiTouchAt < 400); }
+  document.addEventListener('touchstart', (e) => {
+    if (e.touches && e.touches.length > 1) {
+      multiTouchActive = true;
+      lastMultiTouchAt = Date.now();
+      if (typeof disarmHome === 'function') disarmHome(); // ズーム操作で「戻る?」状態にしない
+    }
+  }, { passive: true, capture: true });
+  document.addEventListener('touchmove', (e) => {
+    if (e.touches && e.touches.length > 1) { multiTouchActive = true; lastMultiTouchAt = Date.now(); }
+  }, { passive: true, capture: true });
+  // 指が全部離れた時だけ状態を終わらせる。単発タップでは延長しないので、
+  // ズーム直後に普通のテンポでタップしても反応しなくなることはない。
+  function endTouchSequence(e) {
+    if (e.touches && e.touches.length > 0) return;
+    if (multiTouchActive) lastMultiTouchAt = Date.now(); // 直後の合成クリックだけ捨てる
+    multiTouchActive = false;
+  }
+  document.addEventListener('touchend', endTouchSequence, { passive: true, capture: true });
+  document.addEventListener('touchcancel', endTouchSequence, { passive: true, capture: true });
+
+  // 指が動いていない・1本指・ジェスチャー外、の時だけ発火する安全なタップ
+  function onSafeTap(node, fn) {
+    if (!window.PointerEvent) {
+      node.addEventListener('click', (e) => { if (!inGesture()) fn(e); });
+      return;
+    }
+    let down = null, multi = false;
+    node.addEventListener('pointerdown', (e) => {
+      if (!e.isPrimary) { multi = true; down = null; return; }
+      multi = false;
+      down = { x: e.clientX, y: e.clientY, t: Date.now() };
+    });
+    node.addEventListener('pointerup', (e) => {
+      const d = down; down = null;
+      if (!d || multi || !e.isPrimary) return;
+      if (Math.abs(e.clientX - d.x) > 12 || Math.abs(e.clientY - d.y) > 12) return;
+      if (Date.now() - d.t > 800) return;
+      if (inGesture()) return;
+      fn(e);
+    });
+    node.addEventListener('pointercancel', () => { down = null; });
+  }
+
   // 共有ボタン: 対応環境ではネイティブ共有シート、非対応ならクリップボードコピーにフォールバック
   (function setupShareButton() {
     const shareBtn = el('shareBtn');
@@ -1706,6 +1832,73 @@ class PitchShifter {
     return m + ':' + s;
   }
 
+  // ---------- 書き出しファイル名 ----------
+  // 拡張子を落として、元の曲名だけ取り出す
+  function baseFileName(name, fallback) {
+    var n = String(name == null ? '' : name).replace(/\.[^.\/\\]+$/, '');
+    n = n.trim();
+    return n || (fallback || '');
+  }
+  // ファイル名に使えない文字を潰す。端末やクラウドで弾かれないようにするため。
+  function sanitizeFileName(name, fallback) {
+    var n = String(name == null ? '' : name);
+    n = n.replace(/[\\\/:*?"<>|]/g, '_');   // OSが嫌う文字
+    // eslint-disable-next-line no-control-regex
+    n = n.replace(/[\u0000-\u001f\u007f]/g, '');
+    n = n.replace(/\s+/g, ' ').trim();
+    n = n.replace(/[_\s]*_[_\s]*/g, '_');   // "_ " や "__" は1つにまとめる
+    n = n.replace(/^[._\s]+|[._\s]+$/g, ''); // 先頭/末尾のドット・空白・アンダースコア
+    if (n.length > 80) n = n.slice(0, 80).trim();
+    return n || (fallback || 'mdance_tempo_edit');
+  }
+  // いまの編集内容から、中身が分かる名前を組み立てる
+  function suggestedFileName() {
+    var base = state.sourceName || 'mdance_tempo_edit';
+    var parts = [];
+    if (state.globalEdit) {
+      parts.push('全体' + state.globalEdit.pct + '%' + (state.globalEdit.dir === 'slow' ? '遅く' : '速く'));
+    }
+    var n = state.edits.length;
+    if (n === 1) {
+      var ed = state.edits[0];
+      parts.push('1か所' + ed.pct + '%' + (ed.dir === 'slow' ? '遅く' : '速く'));
+    } else if (n > 1) {
+      parts.push(n + 'か所変更');
+    }
+    if (!parts.length) parts.push('書き出し');
+    return sanitizeFileName(base + '_' + parts.join('_'), 'mdance_tempo_edit');
+  }
+
+  // "1:23.4" / "83.4" / "1分23秒" / 全角 などを秒数に変換。ダメならNaN
+  function parseTimeStr(str) {
+    if (str == null) return NaN;
+    let t = String(str).trim();
+    if (!t) return NaN;
+    // 全角英数・記号を半角へ
+    t = t.replace(/[０-９．：]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0));
+    // 「分」「秒」表記もコロン形式に寄せる
+    t = t.replace(/分/g, ':').replace(/秒/g, '').replace(/\s+/g, '');
+    if (t.indexOf(':') >= 0) {
+      const parts = t.split(':');
+      if (parts.length !== 2) return NaN;
+      const m = parseFloat(parts[0] || '0');
+      const s = parts[1] === '' ? 0 : parseFloat(parts[1]);
+      if (isNaN(m) || isNaN(s) || m < 0 || s < 0) return NaN;
+      return m * 60 + s;
+    }
+    const v = parseFloat(t);
+    return (isNaN(v) || v < 0) ? NaN : v;
+  }
+  function getTimeVal(inp) { return parseTimeStr(inp.value); }
+  function setTimeVal(inp, sec) {
+    inp.value = (sec == null || isNaN(sec)) ? '' : fmtTime(Math.max(0, sec));
+  }
+  // 入力後に "0:12.5" 形式へ整形(解釈できなければそのまま残す)
+  function normalizeTimeInput(inp) {
+    const v = parseTimeStr(inp.value);
+    if (!isNaN(v)) setTimeVal(inp, v);
+  }
+
   // ---------- ファイル読み込み ----------
   fileInput.addEventListener('change', async (e) => {
     const file = e.target.files[0];
@@ -1722,6 +1915,8 @@ class PitchShifter {
       }
       state.audioBuffer = buf;
       state.processedBuffer = buf;
+      state.sourceName = baseFileName(file.name, '曲'); // 書き出し名のベースに使う
+      if (typeof refreshExportName === 'function') refreshExportName(true); // 前の曲の名前を持ち越さない
       state.edits = [];
       state.globalEdit = null;
       emptyState.classList.add('hidden');
@@ -1745,7 +1940,30 @@ class PitchShifter {
   });
 
   // ホームボタン: 曲選択画面に戻る(現在の編集内容は破棄)
-  homeBtn.addEventListener('click', () => {
+  // ピンチズームの直後などに誤タップで全部消えてしまうのを防ぐため、2回タップで確定する
+  let homeArmed = false, homeArmTimer = null;
+  function disarmHome() {
+    if (!homeArmed) return;
+    clearTimeout(homeArmTimer);
+    homeArmed = false;
+    homeBtn.textContent = '🏠';
+    homeBtn.classList.remove('armed');
+  }
+  onSafeTap(homeBtn, () => {
+    if (!homeArmed) {
+      homeArmed = true;
+      homeBtn.textContent = '戻る?';
+      homeBtn.classList.add('armed');
+      showToast('曲選択に戻ると編集内容は消えます。戻るにはもう一度タップしてください');
+      homeArmTimer = setTimeout(() => {
+        homeArmed = false; homeBtn.textContent = '🏠'; homeBtn.classList.remove('armed');
+      }, 3500);
+      return;
+    }
+    clearTimeout(homeArmTimer);
+    homeArmed = false;
+    homeBtn.textContent = '🏠';
+    homeBtn.classList.remove('armed');
     if (typeof stopPlayback === 'function') stopPlayback();
     state.audioBuffer = null;
     state.processedBuffer = null;
@@ -1791,16 +2009,18 @@ class PitchShifter {
   // ---------- 波形描画 ----------
   function drawWave(buffer) {
     const canvas = waveCanvas;
-    const dpr = window.devicePixelRatio || 1;
+    // ピンチズーム中はdevicePixelRatioが変わるので毎回取り直す(上限4で描画コストを抑える)
+    const dpr = Math.min(4, window.devicePixelRatio || 1);
     const cssWidth = canvas.clientWidth || 400;
-    canvas.width = cssWidth * dpr;
-    canvas.height = 84 * dpr;
+    const cssHeight = canvas.clientHeight || 160;
+    canvas.width = Math.round(cssWidth * dpr);
+    canvas.height = Math.round(cssHeight * dpr);
     const ctx = canvas.getContext('2d');
-    ctx.scale(dpr, dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     const data = buffer.getChannelData(0);
-    const barCount = 90;
-    const step = Math.floor(data.length / barCount);
-    ctx.clearRect(0,0,cssWidth,84);
+    const barCount = Math.max(60, Math.min(160, Math.round(cssWidth / 3)));
+    const step = Math.max(1, Math.floor(data.length / barCount));
+    ctx.clearRect(0,0,cssWidth,cssHeight);
     const barW = cssWidth / barCount;
     for (let i=0;i<barCount;i++) {
       let max = 0;
@@ -1809,12 +2029,12 @@ class PitchShifter {
         const v = Math.abs(data[start+j] || 0);
         if (v > max) max = v;
       }
-      const h = Math.max(3, max * 78);
-      const sv = parseFloat(startInput.value), ev = parseFloat(endInput.value);
+      const h = Math.max(3, max * (cssHeight - 8));
+      const sv = getTimeVal(startInput), ev = getTimeVal(endInput);
       const t = (i/barCount) * buffer.duration;
       const inSel = currentMode === 'region' && !isNaN(sv) && !isNaN(ev) && t >= Math.min(sv,ev) && t <= Math.max(sv,ev) && Math.abs(ev-sv) > 0.01;
       ctx.fillStyle = inSel ? '#ff8ad1' : '#3a4160';
-      ctx.fillRect(i*barW+0.5, (84-h)/2, barW-1, h);
+      ctx.fillRect(i*barW+0.5, (cssHeight-h)/2, Math.max(1, barW-1), h);
     }
     timeLabels.innerHTML = '';
     for (let i=0;i<=4;i++) {
@@ -1824,20 +2044,20 @@ class PitchShifter {
     }
     // start/endマーカー線(区間モードの時だけ表示。入力が空なら描かない)
     if (currentMode !== 'region') return;
-    const s = parseFloat(startInput.value), en = parseFloat(endInput.value);
+    const s = getTimeVal(startInput), en = getTimeVal(endInput);
     if (!isNaN(s) && s >= 0 && s <= buffer.duration) {
       const x = (s/buffer.duration) * cssWidth;
       ctx.strokeStyle = '#4ade80'; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 84); ctx.stroke();
-      ctx.fillStyle = '#4ade80'; ctx.font = 'bold 9px sans-serif';
-      ctx.fillText('開始', Math.min(cssWidth-24, x+3), 11);
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, cssHeight); ctx.stroke();
+      ctx.fillStyle = '#4ade80'; ctx.font = 'bold 12px sans-serif';
+      ctx.fillText('開始', Math.min(cssWidth-32, x+4), 14);
     }
     if (!isNaN(en) && en > 0 && en <= buffer.duration) {
       const x = (en/buffer.duration) * cssWidth;
       ctx.strokeStyle = '#ff8ad1'; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 84); ctx.stroke();
-      ctx.fillStyle = '#ff8ad1'; ctx.font = 'bold 9px sans-serif';
-      ctx.fillText('終了', Math.max(2, x-24), 11);
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, cssHeight); ctx.stroke();
+      ctx.fillStyle = '#ff8ad1'; ctx.font = 'bold 12px sans-serif';
+      ctx.fillText('終了', Math.max(2, x-32), 14);
     }
   }
 
@@ -1856,33 +2076,52 @@ class PitchShifter {
     showToast('選択をクリアしました。波形をタップして開始位置から選び直してください');
   });
 
-  waveCanvas.addEventListener('click', (e) => {
+  // 波形のタップ処理。clickイベントはピンチズーム/スクロールの直後にiOSが
+  // 握りつぶすことがあるので、ポインタの押し離しから自前でタップを判定する。
+  function handleWaveTap(clientX) {
     if (!state.audioBuffer) return;
     if (currentMode !== 'region') return; // 区間モードの時だけ開始/終了を選択できる
-    const rect = waveCanvas.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
+    const rect = waveCanvas.getBoundingClientRect(); // ズーム後も必ず取り直す
+    if (!rect.width) return;
+    const clickX = Math.max(0, Math.min(rect.width, clientX - rect.left));
     const ratio = clickX / rect.width;
     const t = Math.max(0, Math.min(state.audioBuffer.duration, ratio * state.audioBuffer.duration));
 
     // 即座に光るフラッシュ(タップ位置がすぐ分かるように)
     const flash = document.createElement('div');
     flash.className = 'tap-flash';
-    flash.style.left = clickX + 'px';
+    flash.style.left = (clickX / rect.width * 100) + '%';
     document.querySelector('.wave-wrap').appendChild(flash);
     setTimeout(() => flash.remove(), 420);
 
     if (state.selecting === 'start') {
-      startInput.value = t.toFixed(1);
+      setTimeVal(startInput, t);
       state.selecting = 'end';
     } else {
-      endInput.value = t.toFixed(1);
+      setTimeVal(endInput, t);
       state.selecting = 'start';
     }
     updateTapHint();
     drawWave(state.audioBuffer);
-  });
-  startInput.addEventListener('change', () => state.audioBuffer && drawWave(state.audioBuffer));
-  endInput.addEventListener('change', () => state.audioBuffer && drawWave(state.audioBuffer));
+  }
+
+  onSafeTap(waveCanvas, (e) => handleWaveTap(e.clientX));
+
+  // 画面サイズ・ズーム倍率が変わったら波形を描き直す(ぼやけ防止)
+  let redrawTimer = null;
+  function scheduleWaveRedraw() {
+    clearTimeout(redrawTimer);
+    redrawTimer = setTimeout(() => {
+      if (state.audioBuffer && !mainUI.classList.contains('hidden')) drawWave(state.audioBuffer);
+    }, 180);
+  }
+  window.addEventListener('resize', scheduleWaveRedraw);
+  window.addEventListener('orientationchange', scheduleWaveRedraw);
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', scheduleWaveRedraw);
+  }
+  startInput.addEventListener('change', () => { normalizeTimeInput(startInput); if (state.audioBuffer) drawWave(state.audioBuffer); });
+  endInput.addEventListener('change', () => { normalizeTimeInput(endInput); if (state.audioBuffer) drawWave(state.audioBuffer); });
 
   // ---------- トグル/スライダー ----------
   regionToggle.addEventListener('click', (e) => {
@@ -1905,8 +2144,12 @@ class PitchShifter {
 
   // ---------- 区間の適用 ----------
   applyRegionBtn.addEventListener('click', () => {
-    const s = parseFloat(startInput.value), e = parseFloat(endInput.value);
+    const s = getTimeVal(startInput); let e = getTimeVal(endInput);
     if (isNaN(s) || isNaN(e) || e <= s) { showToast('開始と終了の時間を正しく指定してください'); return; }
+    // 曲の長さを超える指定は曲尻に丸める(入力欄にも反映して、見た目と中身をズラさない)
+    const songDur = state.audioBuffer ? state.audioBuffer.duration : 0;
+    if (s >= songDur) { showToast('開始位置が曲の長さを超えています'); return; }
+    if (e > songDur) { e = songDur; setTimeVal(endInput, e); showToast('終了位置を曲の終わり(' + fmtTime(e) + ')に合わせました'); }
     if (e - s < 0.3) { showToast('区間が短すぎます(0.3秒以上にしてください)'); return; }
     addRegionEdit(s, e, regionDir, parseInt(regionPct.value));
   });
@@ -1974,7 +2217,7 @@ class PitchShifter {
     return dir === 'slow' ? 1/(1+pct/100) : 1/(1-pct/100);
   }
 
-  function wsolaStretch(channels, speed, sampleRate, progressCb, coreLen) {
+  function wsolaStretch(channels, speed, sampleRate, progressCb, coreLen, tailOut, preIn) {
     // SoundTouchエンジン(実績あるタイムストレッチ)による処理。音程は保持される。
     // speedの定義: 出力長 = coreLen / speed(coreLen省略時は入力全長)
     // channelsにはcoreLenより後ろの「続きの実音声」を含めてよい。無音ではなく実音声で
@@ -1984,16 +2227,32 @@ class PitchShifter {
     var isMono = channels.length === 1;
     var left = channels[0];
     var right = isMono ? channels[0] : channels[1];
-    var expectedLen = Math.round(inLen / speed);
+    // tailOut: 本体の後ろに余分に出力する「のりしろ」。次のチャンクと重ねて繋ぎ目を埋める。
+    var tail = (typeof tailOut === 'number' && tailOut > 0) ? Math.round(tailOut) : 0;
+    // preIn: 本体の前に「助走」として食わせる入力サンプル数。エンジンは出力の最初の
+    // 数msが小さくなる性質があるため、曲の冒頭を反転コピーして助走に使い、その分の
+    // 出力は捨てる。こうすると1音目がちゃんと最初から鳴る。
+    var pre = (typeof preIn === 'number' && preIn > 0) ? Math.round(preIn) : 0;
+    var discard = pre > 0 ? Math.round(pre / speed) : 0;
+    var coreOut = Math.round(inLen / speed);
+    var expectedLen = discard + coreOut + tail;
     var padFrames = 16384;
-    var totalSrc = srcLen + padFrames;
+    var totalSrc = pre + srcLen + padFrames;
     var source = {
       extract: function(target, numFrames, position) {
         var n = Math.min(numFrames, Math.max(0, totalSrc - position));
         for (var i=0;i<n;i++) {
           var p = position + i;
-          if (p < srcLen) { target[i*2] = left[p]; target[i*2+1] = right[p]; }
-          else { target[i*2] = 0; target[i*2+1] = 0; }
+          if (p < pre) {
+            // 助走区間: 本編の頭を鏡のように反転したもの(不連続を作らない)
+            var q = pre - 1 - p;
+            if (q >= srcLen) q = srcLen - 1;
+            target[i*2] = left[q]; target[i*2+1] = right[q];
+          } else {
+            var r = p - pre;
+            if (r < srcLen) { target[i*2] = left[r]; target[i*2+1] = right[r]; }
+            else { target[i*2] = 0; target[i*2+1] = 0; }
+          }
         }
         return n;
       }
@@ -2001,19 +2260,27 @@ class PitchShifter {
     var st = new SoundTouch();
     st.tempo = speed;
     var filter = new SimpleFilter(source, st);
-    var outL = new Float32Array(expectedLen);
-    var outR = new Float32Array(expectedLen);
+    var outL = new Float32Array(expectedLen - discard);
+    var outR = new Float32Array(expectedLen - discard);
     var buf = new Float32Array(16384*2);
     var written = 0;
     var lastReport = 0;
-    while (written < expectedLen) {
+    var skipped = 0; // 助走ぶんの出力を読み飛ばす
+    while (written < expectedLen - discard) {
       var n = filter.extract(buf, 16384);
       if (n <= 0) break;
-      var take = Math.min(n, expectedLen - written);
-      for (var i=0;i<take;i++) { outL[written+i]=buf[i*2]; outR[written+i]=buf[i*2+1]; }
+      var from = 0;
+      if (skipped < discard) {
+        var sk = Math.min(n, discard - skipped);
+        skipped += sk; from = sk;
+        if (from >= n) continue;
+      }
+      var avail = n - from;
+      var take = Math.min(avail, (expectedLen - discard) - written);
+      for (var i=0;i<take;i++) { outL[written+i]=buf[(from+i)*2]; outR[written+i]=buf[(from+i)*2+1]; }
       written += take;
       if (progressCb && written - lastReport > 220500) { // 約5秒分ごとに報告
-        progressCb(Math.min(0.99, written/expectedLen));
+        progressCb(Math.min(0.99, written/Math.max(1, expectedLen - discard)));
         lastReport = written;
       }
     }
@@ -2041,10 +2308,15 @@ class PitchShifter {
         cursor = Math.max(cursor, en);
       }
       if (cursor < totalLen) segments.push({ s: cursor, e: totalLen, speed: 1 });
+      segments = segments.filter(function(sg){ return sg.e > sg.s; });
       if (segments.length === 0) segments.push({ s: 0, e: totalLen, speed: 1 });
 
       var CONTEXT = 16384; // 区間の後ろに続く実音声をエンジンに渡し、末尾の無音ギャップを防ぐ
+      // XF: 繋ぎ目の「のりしろ」(約50ms)。前のチャンクの続きを次のチャンクに重ねることで、
+      // タイムストレッチ開始直後の立ち上がり(音が小さくなる区間)を埋め、音のうねりを防ぐ。
+      var XF = Math.round(sampleRate * 0.05);
       var outChunks = [];
+      var coreLens = [];
       for (var c=0;c<numCh;c++) outChunks.push([]);
       var done = 0;
       for (var g=0; g<segments.length; g++) {
@@ -2052,40 +2324,57 @@ class PitchShifter {
         var segBase = (done/segments.length) * 100 * globalWeight;
         var segSpan = (1/segments.length) * 100 * globalWeight;
         var processed;
+        var coreOut;
         if (seg.speed === 1) {
-          processed = channels.map(function(ch){ return ch.subarray(seg.s, seg.e); });
+          // 等速の区間も、後ろに実音声を「のりしろ」として付けたまま渡す
+          var rawEnd = Math.min(totalLen, seg.e + XF);
+          processed = channels.map(function(ch){ return ch.subarray(seg.s, rawEnd); });
+          coreOut = seg.e - seg.s;
         } else {
           var extEnd = Math.min(totalLen, seg.e + CONTEXT);
+          var availTailIn = extEnd - seg.e;
+          var tailOut = Math.max(0, Math.min(XF, Math.floor(availTailIn / seg.speed)));
           var sliceExt = channels.map(function(ch){ return ch.subarray(seg.s, extEnd); });
+          // 先頭のチャンクは前に繋ぐ相手がいないので、助走を入れて1音目を守る
+          var preIn = (g === 0) ? Math.min(XF, seg.e - seg.s) : 0;
           processed = wsolaStretch(sliceExt, seg.speed, sampleRate, function(frac) {
             progress(Math.round(segBase + frac*segSpan));
-          }, seg.e - seg.s);
+          }, seg.e - seg.s, tailOut, preIn);
+          coreOut = Math.round((seg.e - seg.s) / seg.speed);
         }
+        coreLens.push(coreOut);
         for (var c2=0;c2<numCh;c2++) outChunks[c2].push(processed[c2]);
         done++;
         progress(Math.round((done/segments.length)*100*globalWeight));
       }
+      // 繋ぎ目は「前のチャンクののりしろ」と「次のチャンクの頭」を直線クロスフェードで
+      // 重ね合わせる。本体(core)の長さは一切削らないので、曲全体の尺はズレない。
       finalChannels = outChunks.map(function(chunks) {
+        var nC = chunks.length;
+        var cross = [];
+        for (var i=0;i<nC-1;i++) {
+          var tailAvail = chunks[i].length - coreLens[i];
+          cross.push(Math.max(0, Math.min(XF, tailAvail, coreLens[i+1])));
+        }
         var len = 0;
-        for (var i=0;i<chunks.length;i++) len += chunks[i].length;
+        for (var i1=0;i1<nC;i1++) len += coreLens[i1];
         var merged = new Float32Array(len);
         var off = 0;
-        var junctions = [];
-        for (var i2=0;i2<chunks.length;i2++) {
-          merged.set(chunks[i2], off);
-          off += chunks[i2].length;
-          if (i2 < chunks.length-1) junctions.push(off);
-        }
-        // 繋ぎ目のクリックノイズ防止: 境界の前後96サンプル(約2ms)をV字型にフェードして滑らかに繋ぐ
-        var F = 96;
-        for (var j=0;j<junctions.length;j++) {
-          var pos = junctions[j];
-          for (var f=0;f<F;f++) {
-            var gain = f/F; // 境界に近いほど0、離れるほど1に戻る
-            var before = pos-1-f, after = pos+f;
-            if (before >= 0) merged[before] *= gain;
-            if (after < len) merged[after] *= gain;
+        for (var i2=0;i2<nC;i2++) {
+          var ch = chunks[i2];
+          var core = coreLens[i2];
+          var fadeIn  = i2 > 0      ? cross[i2-1] : 0;
+          var fadeOut = i2 < nC-1   ? cross[i2]   : 0;
+          for (var j=0;j<core;j++) {
+            var w = j < fadeIn ? (j+1)/(fadeIn+1) : 1;
+            merged[off+j] += ch[j] * w;
           }
+          for (var k=0;k<fadeOut;k++) {
+            var pos = off + core + k;
+            if (pos >= len) break;
+            merged[pos] += ch[core+k] * (1 - (k+1)/(fadeOut+1));
+          }
+          off += core;
         }
         return merged;
       });
@@ -2283,6 +2572,8 @@ class PitchShifter {
 
   function stopPlayback() {
     sourceToken++;
+    isScrubbing = false;
+    if (typeof stopScrubGrain === 'function') stopScrubGrain(0.02);
     if (playSource) { try { playSource.stop(); } catch(e){} playSource = null; }
     if (audioCtx && audioCtx.state === 'suspended') { audioCtx.resume(); }
     cancelAnimationFrame(phRAF);
@@ -2336,29 +2627,97 @@ class PitchShifter {
     }
   });
 
-  // 再生位置バー:ドラッグ中はラベルだけ追従、離した時点でその位置から再生し直す
+  // ---------- 再生位置バーのスクラブ再生 ----------
+  // ドラッグしている間、その位置の音を短く鳴らし続ける(頭出しを耳で探せるように)。
+  let scrubSrc = null, scrubGain = null;
+  let lastGrainAt = 0, lastGrainPos = -1;
+  const GRAIN_SEC = 0.18;   // 1回に鳴らす長さ
+  const GRAIN_GAP = 100;    // 次の粒を鳴らすまでの最短間隔(ms)
+
+  function stopScrubGrain(fadeSec) {
+    if (!scrubGain) { scrubSrc = null; return; }
+    try {
+      const now = audioCtx.currentTime;
+      scrubGain.gain.cancelScheduledValues(now);
+      scrubGain.gain.setValueAtTime(scrubGain.gain.value, now);
+      scrubGain.gain.linearRampToValueAtTime(0, now + (fadeSec || 0.03));
+    } catch (e) {}
+    const s = scrubSrc;
+    setTimeout(() => { try { if (s) s.stop(); } catch (e) {} }, 60);
+    scrubSrc = null; scrubGain = null;
+  }
+
+  function playScrubGrain(t) {
+    if (!state.processedBuffer || !audioCtx) return;
+    const now = Date.now();
+    if (now - lastGrainAt < GRAIN_GAP) return;
+    if (Math.abs(t - lastGrainPos) < 0.015) return; // 指が止まっている間は鳴らさない
+    lastGrainAt = now; lastGrainPos = t;
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    stopScrubGrain(0.02);
+    const dur = state.processedBuffer.duration;
+    const off = Math.max(0, Math.min(dur - 0.02, t));
+    const src = audioCtx.createBufferSource();
+    src.buffer = state.processedBuffer;
+    const g = audioCtx.createGain();
+    const ct = audioCtx.currentTime;
+    const len = Math.min(GRAIN_SEC, dur - off);
+    g.gain.setValueAtTime(0, ct);
+    g.gain.linearRampToValueAtTime(1, ct + 0.015);
+    g.gain.setValueAtTime(1, ct + Math.max(0.02, len - 0.03));
+    g.gain.linearRampToValueAtTime(0, ct + len);
+    src.connect(g); g.connect(audioCtx.destination);
+    try { src.start(0, off, len); } catch (e) { return; }
+    scrubSrc = src; scrubGain = g;
+  }
+
+  function beginScrub() {
+    if (isScrubbing) return;
+    isScrubbing = true;
+    // 本体の再生は一旦止める(スクラブ音と二重に鳴らないように)
+    sourceToken++;
+    if (playSource) { try { playSource.stop(); } catch (e) {} playSource = null; }
+    cancelAnimationFrame(phRAF);
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    lastGrainPos = -1;
+  }
+
   seekBar.addEventListener('input', () => {
     if (!state.processedBuffer) return;
-    isScrubbing = true;
+    beginScrub();
     const t = parseFloat(seekBar.value) / 1000;
     const pct = (t / state.processedBuffer.duration * 100);
     playheadLine.style.left = pct + '%';
     seekFill.style.width = pct + '%';
     seekTimeLabel.textContent = fmtTime(t) + ' / ' + fmtTime(state.processedBuffer.duration);
+    playScrubGrain(t); // バーの動きに合わせて音も進む/戻る
   });
   seekBar.addEventListener('change', () => {
     if (!state.processedBuffer) return;
     const t = parseFloat(seekBar.value) / 1000;
     isScrubbing = false;
-    playFromOffset(t);
+    stopScrubGrain(0.02);
+    playFromOffset(t); // 離したらその位置から通常再生
   });
 
   // ---------- 書き出し(WAV) ----------
   // ---------- 書き出し(形式選択シート) ----------
   const exportOverlay = el('exportOverlay');
   const exportProgress = el('exportProgress');
+  const exportName = el('exportName');
+  let exportNameTouched = false; // ユーザーが自分で書き換えたか
+  exportName.addEventListener('input', () => { exportNameTouched = true; });
+
+  // 編集内容が変わったら、自動生成の名前を作り直す(手入力していない場合だけ)
+  function refreshExportName(force) {
+    if (force) exportNameTouched = false;
+    if (exportNameTouched) return;
+    exportName.value = suggestedFileName();
+  }
+
   saveBtn.addEventListener('click', () => {
     if (!state.processedBuffer) return;
+    refreshExportName();
     exportOverlay.classList.add('show');
   });
   el('exportCloseBtn').addEventListener('click', () => exportOverlay.classList.remove('show'));
@@ -2372,12 +2731,20 @@ class PitchShifter {
     setTimeout(() => URL.revokeObjectURL(url), 5000);
   }
 
+  // 入力欄の中身を整えて、拡張子を付けた最終的なファイル名にする
+  function finalFileName(ext) {
+    const clean = sanitizeFileName(baseFileName(exportName.value), suggestedFileName());
+    exportName.value = clean; // 整形結果を画面にも反映
+    return clean + '.' + ext;
+  }
+
   el('exportWavBtn').addEventListener('click', () => {
     if (!state.processedBuffer) return;
+    const name = finalFileName('wav');
     const wavBlob = encodeWAV(state.processedBuffer);
-    downloadBlob(wavBlob, 'mdance_tempo_edit.wav');
+    downloadBlob(wavBlob, name);
     exportOverlay.classList.remove('show');
-    showToast('✓ WAVで保存しました');
+    showToast('✓ 「' + name + '」で保存しました', 5000);
   });
 
   el('exportMp3Btn').addEventListener('click', () => {
@@ -2386,10 +2753,11 @@ class PitchShifter {
     exportProgress.textContent = 'MP3に変換中...';
     setTimeout(() => {
       try {
+        const name = finalFileName('mp3');
         const mp3Blob = encodeMP3(state.processedBuffer);
-        downloadBlob(mp3Blob, 'mdance_tempo_edit.mp3');
+        downloadBlob(mp3Blob, name);
         exportOverlay.classList.remove('show');
-        showToast('✓ MP3で保存しました');
+        showToast('✓ 「' + name + '」で保存しました', 5000);
       } catch (err) {
         console.warn('MP3 encode error:', err);
         showToast('MP3への変換に失敗しました。WAVをお試しください。');
