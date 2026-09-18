@@ -193,6 +193,43 @@
   }
   .scope-toggle button.active small { opacity: 0.68; }
   .step-nav { display: flex; gap: 8px; margin: 10px 18px 0; }
+
+  /* 「使う / 使わない」の二択。まずこれだけを見せる */
+  .step-ask { display: flex; flex-direction: column; gap: 10px; margin: 0 18px; }
+  .step-ask .use-btn {
+    width: 100%; min-height: 68px; padding: 14px; border-radius: 15px; border: none;
+    background: linear-gradient(90deg, #ff6ec7, #a78bfa); color: #12081a;
+    font-size: 17px; font-weight: 800; line-height: 1.4;
+  }
+  .step-ask .use-btn small { display: block; font-size: 11.5px; font-weight: 700; opacity: 0.7; margin-top: 3px; }
+  .step-ask .skip-btn {
+    width: 100%; min-height: 56px; padding: 12px; border-radius: 14px;
+    border: 1px solid #2a3050; background: #151827; color: #9096a8;
+    font-size: 14.5px; font-weight: 800;
+  }
+  .step-ask .skip-btn.done { background: #14361f; color: #9ce8b4; border-color: #2c6b41; }
+
+  /* 「使う」を押したときに最初に出る案内 */
+  .step-guide {
+    display: flex; gap: 10px; align-items: flex-start;
+    margin: 0 0 12px; padding: 12px 13px; border-radius: 12px;
+    background: linear-gradient(90deg, rgba(255,110,199,0.13), rgba(167,139,250,0.10));
+    border: 1px solid #3a4270; color: #f0f1f6;
+    font-size: 14px; font-weight: 700; line-height: 1.6;
+  }
+  .step-guide .num {
+    flex: 0 0 auto; width: 24px; height: 24px; border-radius: 999px;
+    background: #ff6ec7; color: #12081a; font-size: 13px; font-weight: 800;
+    display: flex; align-items: center; justify-content: center; margin-top: 1px;
+  }
+  .step-guide b { color: #ffb3e2; }
+  .step-guide small { display: block; font-size: 12px; font-weight: 700; color: #9096a8; margin-top: 3px; }
+
+  .step-cancel {
+    width: 100%; min-height: 48px; margin: 10px 18px 0; width: calc(100% - 36px);
+    border-radius: 13px; border: 1px solid #2a3050; background: #151827;
+    color: #9096a8; font-size: 13.5px; font-weight: 800;
+  }
   .step-nav button {
     min-height: 52px; padding: 12px 10px; border-radius: 13px;
     font-size: 14px; font-weight: 800; border: 1px solid #2a3050;
@@ -392,7 +429,7 @@
   <div class="header">
     <div class="brand"><span class="logo">mDANCE</span><span class="badge">FREE</span></div>
     <div style="display:flex;align-items:center;gap:8px;">
-      <span class="subtitle">テンポチェンジャー <span style="opacity:0.5;">· v42</span></span>
+      <span class="subtitle">テンポチェンジャー <span style="opacity:0.5;">· v46</span></span>
       <button class="home-btn hidden" id="homeBtn" title="曲選択に戻る">🏠</button>
       <button class="help-btn" id="helpBtn">?</button>
     </div>
@@ -561,6 +598,14 @@
 
     <div class="step-card hidden" id="step2">
       <div class="step-q"><span class="n">STEP 2</span>⏩ スピードを<br>変えますか？</div>
+
+      <div class="step-ask" id="ask2">
+        <button class="use-btn" data-use="2">⏩ スピードを変える<small>曲全体でも、一部の区間だけでもOK</small></button>
+        <button class="skip-btn" data-goto="3">使わない・次へ ▶</button>
+      </div>
+
+      <div class="step-body hidden" id="body2">
+      <div class="step-guide" id="guide2"></div>
       <div class="scope-toggle" id="scopeToggle">
         <button data-scope="global" class="active"><b>🌍 曲全体</b><small>まるごと変える</small></button>
         <button data-scope="region"><b>✂️ 区間だけ</b><small>一部だけ変える</small></button>
@@ -603,29 +648,51 @@
         <button class="apply-btn" id="applyRegionBtn">この区間に適用</button>
       </div>
 
+      <button class="step-cancel" data-cancel="2">↩︎ やっぱり使わない</button>
+      </div>
+
       <div class="step-nav">
         <button class="nav-home" id="navHome2">◀ 曲を選び直す</button>
-        <button class="nav-next" data-goto="3">使わない・次へ ▶</button>
+        <button class="nav-next" data-goto="3">次へ ▶</button>
       </div>
     </div>
 
     <div class="step-card hidden" id="step3">
       <div class="step-q"><span class="n">STEP 3</span>✂️ 区間だけ<br>カットしますか？</div>
+
+      <div class="step-ask" id="ask3">
+        <button class="use-btn" data-use="3">✂️ いらない部分をカットする<small>イントロや後奏を切って短くできます</small></button>
+        <button class="skip-btn" data-goto="4">使わない・次へ ▶</button>
+      </div>
+
+      <div class="step-body hidden" id="body3">
       <div class="card">
+        <div class="step-guide" id="guide3"></div>
         <div class="step-slot" data-slot="3"></div>
         <div class="len-preview" id="cutPreview"></div>
         <button class="apply-btn btn-cut" id="cutRegionBtn">🗑 この区間をカット</button>
         <div class="step-tip">💡 イントロを切るなら <b>0:00.0 〜 好きな位置</b>、後奏を切るなら <b>好きな位置 〜 曲の最後</b> を指定してください</div>
       </div>
+      <button class="step-cancel" data-cancel="3">↩︎ やっぱり使わない</button>
+      </div>
+
       <div class="step-nav">
         <button class="nav-back" data-goto="2">◀ 戻る</button>
-        <button class="nav-next" data-goto="4">使わない・次へ ▶</button>
+        <button class="nav-next" data-goto="4">次へ ▶</button>
       </div>
     </div>
 
     <div class="step-card hidden" id="step4">
       <div class="step-q"><span class="n">STEP 4</span>🔈 フェードを<br>つけますか？</div>
+
+      <div class="step-ask" id="ask4">
+        <button class="use-btn" data-use="4">🔈 フェードをつける<small>音をだんだん大きく／小さくできます</small></button>
+        <button class="skip-btn" data-goto="5">使わない・次へ ▶</button>
+      </div>
+
+      <div class="step-body hidden" id="body4">
       <div class="card">
+        <div class="step-guide" id="guide4"></div>
         <div class="step-slot" data-slot="4"></div>
         <div class="len-preview" id="fadePreview"></div>
         <div class="fade-actions">
@@ -634,9 +701,12 @@
         </div>
         <div class="step-tip">💡 選んだ区間を<b>0〜100%</b>として、聴いた感じが<b>均等に</b>変わります。区間の外はそのままです<br>🔈 <b>フェードイン</b>…区間の中でだんだん大きく（曲の頭に使うと自然に始まります）<br>🔉 <b>フェードアウト</b>…区間の中でだんだん小さく（曲の終わりに使うと自然に終わります）<br>波形に<b>音量の上がり方が線で</b>出るので、見たまま確かめられます📈</div>
       </div>
+      <button class="step-cancel" data-cancel="4">↩︎ やっぱり使わない</button>
+      </div>
+
       <div class="step-nav">
         <button class="nav-back" data-goto="3">◀ 戻る</button>
-        <button class="nav-next" data-goto="5">使わない・次へ ▶</button>
+        <button class="nav-next" data-goto="5">次へ ▶</button>
       </div>
     </div>
 
@@ -2012,13 +2082,98 @@ class PitchShifter {
     regionPicker.classList.toggle('hidden', !slot);
   }
 
+  // 各ステップは最初「使う / 使わない」の二択だけを見せる。
+  // 「使う」を押すと編集の操作盤が出る(stepOpen[n] = true)。
+  const stepOpen = { 2:false, 3:false, 4:false };
+  let arrivedStep = null;   // 「今いるステップに入った」瞬間を見分けるため
+
+  function stepHasEdit(n) {
+    if (n === 2) return state.edits.some(e => e.type !== 'cut') || !!state.globalEdit;
+    if (n === 3) return hasCutEdit();
+    if (n === 4) return state.fades.length > 0;
+    return false;
+  }
+
+  // 「使う」を押した直後に出る案内。何をすればいいかを最初に1行で伝える。
+  function guideTextFor(n) {
+    if (n === 2 && scopeMode === 'global')
+      return '<span class="num">1</span><span>下の <b>遅く / 速く</b> と <b>%</b> を決めて、<b>「曲全体に適用」</b>を押してください' +
+             '<small>曲ぜんぶの速さが変わります</small></span>';
+    if (n === 2)
+      return '<span class="num">1</span><span>まず<b>波形をタップして範囲を選んでください</b>（1回目で開始、2回目で終了）' +
+             '<small>選んでから、下で 遅く／速く と % を決めます</small></span>';
+    if (n === 3)
+      return '<span class="num">1</span><span>まず<b>波形をタップして、カットする範囲を選んでください</b>（1回目で開始、2回目で終了）' +
+             '<small>選んでから「🗑 この区間をカット」を押します</small></span>';
+    if (n === 4)
+      return '<span class="num">1</span><span>まず<b>波形をタップして、フェードをかける範囲を選んでください</b>（1回目で開始、2回目で終了）' +
+             '<small>選んでから フェードイン／フェードアウト を選びます</small></span>';
+    return '';
+  }
+
+  function renderStepMode() {
+    for (let s = 2; s <= 4; s++) {
+      const ask = el('ask' + s), body = el('body' + s), guide = el('guide' + s);
+      if (!ask || !body) continue;
+      const open = !!stepOpen[s];
+      ask.classList.toggle('hidden', open);
+      body.classList.toggle('hidden', !open);
+      if (guide) guide.innerHTML = guideTextFor(s);
+      // すでにこのステップで変更を入れていれば「使わない・次へ」を済みの色に
+      const skip = ask.querySelector('.skip-btn');
+      if (skip) {
+        const done = stepHasEdit(s);
+        skip.classList.toggle('done', done);
+        skip.textContent = done ? '✓ このまま次へ ▶' : '使わない・次へ ▶';
+      }
+      // 閉じている時は「次へ」が二重に見えるので、下の段の「次へ」は隠す
+      const navNext = el('step' + s).querySelector('.step-nav .nav-next');
+      if (navNext) {
+        navNext.classList.toggle('hidden', !open);
+        navNext.classList.toggle('done', stepHasEdit(s));
+      }
+    }
+  }
+
+  function openStep(n) {
+    stepOpen[n] = true;
+    // 前のステップで選んだ範囲を持ち越さない(案内の「まず範囲を選んで」と食い違うため)
+    startInput.value = ''; endInput.value = '';
+    state.selecting = 'start';
+    updateTapHint();
+    goStep(n);
+    showToast(n === 2 && scopeMode === 'global'
+      ? '下で 遅く／速く と % を決めてください'
+      : '波形をタップして範囲を選んでください');
+  }
+  function closeStep(n) {
+    stepOpen[n] = false;
+    startInput.value = ''; endInput.value = '';
+    state.selecting = 'start';
+    goStep(n);
+  }
+
+  document.addEventListener('click', (e) => {
+    const use = e.target.closest('[data-use]');
+    if (use && !inGesture()) { openStep(parseInt(use.dataset.use, 10)); return; }
+    const cancel = e.target.closest('[data-cancel]');
+    if (cancel && !inGesture()) { closeStep(parseInt(cancel.dataset.cancel, 10)); }
+  });
+
   function goStep(n) {
     currentStep = Math.max(FIRST_STEP, Math.min(LAST_STEP, n));
     for (let s = FIRST_STEP; s <= LAST_STEP; s++) {
       el('step' + s).classList.toggle('hidden', s !== currentStep);
     }
-    // 区間を使う場面（STEP2で「区間だけ」を選んでいる時、またはSTEP3のカット）
-    const usesRegion = (currentStep === 2 && scopeMode === 'region') || currentStep === 3 || currentStep === 4;
+    // すでに変更を入れてあるステップに「別のステップから」入ってきた時だけ、開いた状態で見せる。
+    // (同じステップ内での描き直しでは開かない = 「やっぱり使わない」が効く)
+    if (arrivedStep !== currentStep) {
+      arrivedStep = currentStep;
+      if (stepOpen.hasOwnProperty(currentStep) && stepHasEdit(currentStep)) stepOpen[currentStep] = true;
+    }
+    renderStepMode();
+    // 区間を使う場面（STEP2で「区間だけ」を選んでいる時、またはSTEP3/4）。開いている時だけ。
+    const usesRegion = regionStepActive();
     mountRegionPicker(usesRegion ? currentStep : null);
     tapHint.classList.toggle('hidden', !usesRegion);
     resetSelectionBtn.classList.toggle('hidden', !usesRegion);
@@ -2052,7 +2207,7 @@ class PitchShifter {
     [...scopeToggle.children].forEach(b => b.classList.toggle('active', b.dataset.scope === scopeMode));
     el('scopeGlobal').classList.toggle('hidden', scopeMode !== 'global');
     el('scopeRegion').classList.toggle('hidden', scopeMode !== 'region');
-    if (currentStep === 2) goStep(2); // 操作盤の出し入れと波形の描き直し
+    if (currentStep === 2) goStep(2); // 操作盤の出し入れ・案内文・波形の描き直し
   }
   scopeToggle.addEventListener('click', (e) => {
     const btn = e.target.closest('button');
@@ -2068,6 +2223,7 @@ class PitchShifter {
   let globalDir = 'slow';
   // 区間を選べるのは「STEP2で区間だけを選んでいる時」と「STEP3のカット」
   function regionStepActive() {
+    if (!stepOpen[currentStep]) return false;   // 「使う」を押す前は選べない
     return (currentStep === 2 && scopeMode === 'region') || currentStep === 3 || currentStep === 4;
   }
 
@@ -2292,7 +2448,7 @@ class PitchShifter {
     box.innerHTML = lenRow('曲全体', nowTotal, afterTotal);
   }
 
-  function updatePreviews() { updateRegionPreview(); updateGlobalPreview(); updateCutPreview(); updateFadePreview(); updateResetBtnLabel(); }
+  function updatePreviews() { updateRegionPreview(); updateGlobalPreview(); updateCutPreview(); updateFadePreview(); updateResetBtnLabel(); if (typeof renderStepMode === 'function') renderStepMode(); }
 
   // ---------- 書き出しファイル名 ----------
   // 拡張子を落として、元の曲名だけ取り出す
@@ -2323,7 +2479,7 @@ class PitchShifter {
     if (state.fades.length > 0) parts.push('フェード');
     var cuts = 0;
     for (var ci=0; ci<state.edits.length; ci++) if (state.edits[ci].type === 'cut') cuts++;
-    if (cuts > 0) parts.push(cuts + 'か所削除');
+    if (cuts > 0) parts.push(cuts + 'か所カット');
     var n = state.edits.length - cuts;
     if (n === 1) {
       var ed = null;
@@ -2854,6 +3010,8 @@ class PitchShifter {
 
   function resetStepUI() {
     startInput.value = ''; endInput.value = '';
+    stepOpen[2] = stepOpen[3] = stepOpen[4] = false;
+    arrivedStep = null;
   }
 
   // ---------- カットのプレビュー(STEP 4) ----------
@@ -3009,7 +3167,7 @@ class PitchShifter {
     return null;
   }
   function describeEdit(ed) {
-    return fmtTime(ed.start) + '〜' + fmtTime(ed.end) + (ed.type === 'cut' ? 'の削除' : 'の' + ed.pct + '%' + (ed.dir==='slow'?'遅く':'速く'));
+    return fmtTime(ed.start) + '〜' + fmtTime(ed.end) + (ed.type === 'cut' ? 'のカット' : 'の' + ed.pct + '%' + (ed.dir==='slow'?'遅く':'速く'));
   }
 
   onSafeTap(el('cutRegionBtn'), () => {
@@ -3017,14 +3175,14 @@ class PitchShifter {
     if (!buf) return;
     const s = getTimeVal(startInput);
     let e = getTimeVal(endInput);
-    if (isNaN(s) || isNaN(e) || e <= s) { showToast('削除する区間を正しく指定してください'); return; }
+    if (isNaN(s) || isNaN(e) || e <= s) { showToast('カットする区間を正しく指定してください'); return; }
     if (e > buf.duration) { e = buf.duration; setTimeVal(endInput, e); }
     if (e - s < 0.1) { showToast('区間が短すぎます(0.1秒以上にしてください)'); return; }
     const ov = findOverlap(s, e);
     if (ov) { showToast('「' + describeEdit(ov) + '」と重なっています。先にその変更を ✕ で消してください', 6000); return; }
     const rest = projectedLength(state.edits.concat([{ type:'cut', start:s, end:e }]),
                                  state.globalEdit, buf.length, buf.sampleRate) / buf.sampleRate;
-    if (rest < 0.5) { showToast('これを削除すると曲がほとんど残りません'); return; }
+    if (rest < 0.5) { showToast('これをカットすると曲がほとんど残りません'); return; }
     state.edits.push({ id: editIdCounter++, type:'cut', start:s, end:e });
     // 切った場所に開始/終了の印が残ると「消えてない?」と見えるので、選択は空にして次の選択へ
     startInput.value = ''; endInput.value = '';
@@ -3074,7 +3232,7 @@ class PitchShifter {
       const chip = document.createElement('div');
       chip.className = 'chip';
       chip.innerHTML = (ed.type === 'cut')
-        ? `<span class="txt">🗑 ${fmtTime(ed.start)} – ${fmtTime(ed.end)} を <b>削除</b></span>`
+        ? `<span class="txt">🗑 ${fmtTime(ed.start)} – ${fmtTime(ed.end)} を <b>カット</b></span>`
         : `<span class="txt">${fmtTime(ed.start)} – ${fmtTime(ed.end)} を <b>${ed.pct}%${ed.dir==='slow'?'遅く':'速く'}</b></span>`;
       const x = document.createElement('button');
       x.className = 'x'; x.textContent = '✕';
@@ -3315,6 +3473,9 @@ class PitchShifter {
   const workerBlob = new Blob([workerSrc], { type: 'application/javascript' });
   let workerURL = null;
   let workerBroken = false; // Worker実行がブロックされる環境を検出したらtrueにして以後スキップ
+  // 裏で処理する仕組み(Worker)が使えない環境では、黙って画面側の処理に切り替える。
+  // 仕上がる音は同じで、利用者が対処できることは何も無いので、何も表示しない。
+  function noteWorkerFallback() { /* 表示なし */ }
   try { workerURL = URL.createObjectURL(workerBlob); } catch(e) { workerURL = null; }
 
   let renderGeneration = 0;
@@ -3375,7 +3536,13 @@ class PitchShifter {
     // Workerの生成を試みる。プレビュー環境等でブロックされる場合はメインスレッドで処理
     let worker = null;
     if (workerURL && !workerBroken) {
-      try { worker = new Worker(workerURL); } catch (err) { worker = null; }
+      try {
+        worker = new Worker(workerURL);
+      } catch (err) {
+        worker = null;
+        workerBroken = true;   // 以後は試さない(同じ警告を出し続けないため)
+        noteWorkerFallback(err);
+      }
     }
 
     if (!worker) {
@@ -3396,7 +3563,7 @@ class PitchShifter {
       worker.terminate();
       // 実行時にWorkerがブロックされる環境(一部のプレビュー等)。以後はWorkerを試さない
       workerBroken = true;
-      console.warn('バックグラウンド処理がこの環境では使えないため、メインスレッドで処理します:', err.message || err.type || '詳細不明');
+      noteWorkerFallback(err);
       runMainThreadFallback();
     };
 
